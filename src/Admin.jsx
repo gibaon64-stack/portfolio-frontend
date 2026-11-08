@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, ImagePlus, LogOut, Plus, Save, Trash2, X } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff, ImagePlus, LogOut, Plus, Save, Trash2, X } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   getAdminContent,
@@ -21,19 +21,21 @@ const COLLECTIONS = {
     fields: [
       { key: 'name', label: 'Project name', required: true },
       { key: 'category', label: 'Category', type: 'select', options: ['Website Development', 'Web Applications', 'Mobile Applications', 'Business Software', 'Custom Software Solutions'], required: true },
-      { key: 'description', label: 'Description', type: 'textarea', required: true },
+      { key: 'description', label: 'Short description', type: 'textarea', required: true },
+      { key: 'detailed_description', label: 'Detailed description', type: 'textarea' },
       { key: 'status', label: 'Status' },
       { key: 'features', label: 'Key features', type: 'list' },
       { key: 'challenges', label: 'Development challenges', type: 'textarea' },
       { key: 'solutions', label: 'Solutions implemented', type: 'textarea' },
       { key: 'technologies', label: 'Technologies', type: 'list' },
-      { key: 'live_url', label: 'Live URL' },
-      { key: 'github_url', label: 'GitHub URL' },
-      { key: 'cover_image', label: 'Cover image URL' },
+      { key: 'live_url', label: 'Live URL', type: 'url' },
+      { key: 'github_url', label: 'GitHub URL', type: 'url' },
+      { key: 'cover_image', label: 'Thumbnail image URL', type: 'url' },
       { key: 'screenshots', label: 'Screenshot URLs', type: 'list' },
+      { key: 'featured', label: 'Featured project', type: 'checkbox' },
       { key: 'published', label: 'Published', type: 'checkbox' },
     ],
-    initial: { name: '', category: 'Website Development', description: '', status: '', features: '', challenges: '', solutions: '', technologies: '', live_url: '', github_url: '', cover_image: '', screenshots: '', published: false },
+    initial: { name: '', category: 'Website Development', description: '', detailed_description: '', status: '', features: '', challenges: '', solutions: '', technologies: '', live_url: '', github_url: '', cover_image: '', screenshots: '', featured: false, published: false },
   },
   services: {
     title: 'Services',
@@ -76,10 +78,11 @@ const COLLECTIONS = {
 
 const ADMIN_TABS = [
   ['overview', 'Admin Home'],
-  ['about', 'About Us'],
+  ['about', 'Profile'],
   ['contact', 'Contact Us'],
   ['projects', 'Projects'],
   ['services', 'Services'],
+  ['pricing', 'Marketing packages'],
   ['journey', 'Journey'],
   ['social_links', 'Socials'],
   ['media', 'Media'],
@@ -100,6 +103,7 @@ export function AccountPage() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [passwordVisible, setPasswordVisible] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
@@ -121,13 +125,20 @@ export function AccountPage() {
     <PortalFrame eyebrow="ACCOUNT ACCESS">
       <section className="portal-auth">
         <p className="section-kicker">ADMINISTRATOR SIGN IN</p>
-        <h1>Welcome back.</h1>
-        <p>Access to site administration is limited to authorized administrators.</p>
+        <h1>Welcome Back</h1>
+        <p>Access the site administration workspace.</p>
         <form className="portal-form" onSubmit={handleLogin}>
           <label>Email address<input type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
-          <label>Password<input type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required /></label>
+          <label>Password
+            <span className="portal-password-field">
+              <input type={passwordVisible ? 'text' : 'password'} autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+              <button type="button" className="password-visibility-toggle" onClick={() => setPasswordVisible((visible) => !visible)} aria-label={passwordVisible ? 'Hide password' : 'Show password'} aria-pressed={passwordVisible}>
+                {passwordVisible ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
+              </button>
+            </span>
+          </label>
           <button className="admin-primary" type="submit" disabled={submitting}>{submitting ? 'SIGNING IN...' : 'SIGN IN'}</button>
-          <p className="admin-feedback" role="status">{error}</p>
+          {error && <p className="admin-feedback" role="alert">{error}</p>}
         </form>
       </section>
     </PortalFrame>
@@ -303,6 +314,19 @@ function AdminWorkspace({ admin, onLogout }) {
             {activeTab === 'about' && <ProfileEditor profile={content.profile} onSave={(data) => runAction(() => saveAdminResource('/admin/profile', 'PUT', data), 'About Us content updated.')} />}
             {activeTab === 'contact' && <ContactEditor profile={content.profile} onSave={(data) => runAction(() => saveAdminResource('/admin/profile', 'PUT', data), 'Contact information updated.')} />}
             {activeTab === 'media' && <MediaPanel assets={content.media_assets || []} onDelete={(id) => runAction(() => saveAdminResource(`/admin/uploads/${id}`, 'DELETE'), 'Image deleted from Cloudinary.')} />}
+            {activeTab === 'pricing' && (
+              <PricingPackagesEditor
+                service={content.services?.find((item) => item.title.toLowerCase() === 'digital marketing')}
+                onSave={(service, pricing) => runAction(
+                  () => saveAdminResource(`/admin/services/${service.id}`, 'PUT', {
+                    title: service.title,
+                    description: service.description,
+                    pricing,
+                  }),
+                  'Digital marketing packages saved.',
+                )}
+              />
+            )}
             {COLLECTIONS[activeTab] && (
               <CollectionEditor
                 key={activeTab}
@@ -347,12 +371,16 @@ function OverviewPanel({ overview }) {
 }
 
 function ProfileEditor({ profile, onSave }) {
-  const [form, setForm] = useState(profile || { name: 'Ian Mabruk', introduction: '', hero_description: '', hero_image_url: '', about_intro: '', about_who_we_are: '', about_mission: '', about_what_we_do: '', about_approach: '', about_why_choose_us: '', location: 'Kenya', email: '', phone: '', photo_url: '' })
+  const [form, setForm] = useState(profile || { name: 'Ian Mabruk', professional_title: '', introduction: '', skills: [], experience: [], education: [], certifications: [], hero_description: '', hero_image_url: '', about_intro: '', about_who_we_are: '', about_mission: '', about_what_we_do: '', about_approach: '', about_why_choose_us: '', location: 'Kenya', email: '', phone: '', photo_url: '' })
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
 
   function update(key, value) {
     setForm((current) => ({ ...current, [key]: value }))
+  }
+
+  function updateList(key, value) {
+    update(key, value.split('\n').map((item) => item.trim()).filter(Boolean))
   }
 
   async function uploadPhoto(file) {
@@ -388,16 +416,21 @@ function ProfileEditor({ profile, onSave }) {
   }
 
   return (
-    <form className="admin-form" onSubmit={(event) => { event.preventDefault(); onSave(form) }}>
-      <div className="admin-panel-heading"><div><h2>Profile and hero content</h2><p>Content is editable; typography and hero composition remain fixed.</p></div><button className="admin-primary" type="submit"><Save aria-hidden="true" /> SAVE PROFILE</button></div>
+    <form className="admin-form" onSubmit={(event) => { event.preventDefault(); onSave({ name: profile?.name || 'Ian Mabruk', ...form }) }}>
+      <div className="admin-panel-heading"><div><h2>Professional profile</h2><p>Manage the public profile page, hero copy, and biography.</p></div><button className="admin-primary" type="submit"><Save aria-hidden="true" /> SAVE PROFILE</button></div>
       <div className="admin-form-grid">
         <label>Name<input value={form.name || ''} onChange={(event) => update('name', event.target.value)} required maxLength="160" /></label>
+        <label>Professional title<input value={form.professional_title || ''} onChange={(event) => update('professional_title', event.target.value)} maxLength="180" /></label>
         <label>Location<input value={form.location || ''} onChange={(event) => update('location', event.target.value)} maxLength="160" /></label>
         <label>Email<input type="email" value={form.email || ''} onChange={(event) => update('email', event.target.value)} maxLength="254" /></label>
         <label>Phone<input value={form.phone || ''} onChange={(event) => update('phone', event.target.value)} maxLength="48" /></label>
         <label className="admin-field-wide">Hero description<textarea value={form.hero_description || ''} onChange={(event) => update('hero_description', event.target.value)} rows="3" maxLength="1000" /></label>
         <label className="admin-field-wide">Homepage media poster URL<input value={form.hero_image_url || ''} onChange={(event) => update('hero_image_url', event.target.value)} maxLength="500" /></label>
         <label className="admin-field-wide">Profile introduction<textarea value={form.introduction || ''} onChange={(event) => update('introduction', event.target.value)} rows="6" maxLength="5000" /></label>
+        <label>Skills and technologies<textarea value={(form.skills || []).join('\n')} onChange={(event) => updateList('skills', event.target.value)} rows="5" placeholder="One skill per line" /></label>
+        <label>Professional experience<textarea value={(form.experience || []).join('\n')} onChange={(event) => updateList('experience', event.target.value)} rows="5" placeholder="One experience entry per line" /></label>
+        <label>Education<textarea value={(form.education || []).join('\n')} onChange={(event) => updateList('education', event.target.value)} rows="4" placeholder="One education entry per line" /></label>
+        <label>Certifications<textarea value={(form.certifications || []).join('\n')} onChange={(event) => updateList('certifications', event.target.value)} rows="4" placeholder="One certification per line" /></label>
         <label className="admin-field-wide">About Us introduction<textarea value={form.about_intro || ''} onChange={(event) => update('about_intro', event.target.value)} rows="4" maxLength="3000" /></label>
         <label className="admin-field-wide">Who We Are<textarea value={form.about_who_we_are || ''} onChange={(event) => update('about_who_we_are', event.target.value)} rows="3" maxLength="3000" /></label>
         <label className="admin-field-wide">Mission<textarea value={form.about_mission || ''} onChange={(event) => update('about_mission', event.target.value)} rows="3" maxLength="3000" /></label>
@@ -444,7 +477,7 @@ function ContactEditor({ profile, onSave }) {
   }
 
   return (
-    <form className="admin-form" onSubmit={(event) => { event.preventDefault(); onSave(form) }}>
+    <form className="admin-form" onSubmit={(event) => { event.preventDefault(); onSave({ name: profile?.name || 'Ian Mabruk', ...form }) }}>
       <div className="admin-panel-heading"><div><h2>Public contact information</h2><p>These details appear on the Contact Us page.</p></div><button className="admin-primary" type="submit"><Save aria-hidden="true" /> SAVE CONTACT</button></div>
       <div className="admin-form-grid">
         <label>Email address<input type="email" value={form.email} onChange={(event) => update('email', event.target.value)} maxLength={254} /></label>
@@ -453,6 +486,63 @@ function ContactEditor({ profile, onSave }) {
         <label className="admin-field-wide">Contact image URL<input value={form.contact_image_url} onChange={(event) => update('contact_image_url', event.target.value)} maxLength={500} /></label>
         <label className="admin-upload"><ImagePlus aria-hidden="true" /> {uploading ? 'UPLOADING...' : 'UPLOAD CONTACT IMAGE'}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => event.target.files?.[0] && uploadContactImage(event.target.files[0])} /></label>
         {uploadError && <p className="admin-notice has-error" role="alert">{uploadError}</p>}
+      </div>
+    </form>
+  )
+}
+
+function PricingPackagesEditor({ service, onSave }) {
+  const packageDefaults = [
+    { name: 'BRONZE', price: 12000, description: '', included_services: [], platform_count: null, content_details: '', management_details: '' },
+    { name: 'SILVER', price: 16000, description: '', included_services: [], platform_count: null, content_details: '', management_details: '' },
+    { name: 'GOLD', price: 22000, description: '', included_services: [], platform_count: null, content_details: '', management_details: '' },
+  ]
+  const [packages, setPackages] = useState(() => packageDefaults.map((defaults) => ({
+    ...defaults,
+    ...(service?.pricing?.packages?.find((item) => item.name === defaults.name) || {}),
+  })))
+
+  function updatePackage(index, key, value) {
+    setPackages((current) => current.map((item, itemIndex) => {
+      if (itemIndex !== index) return item
+      if (key === 'included_services') {
+        return { ...item, [key]: value.split('\n').map((entry) => entry.trim()).filter(Boolean) }
+      }
+      if (key === 'platform_count') {
+        return { ...item, [key]: value === '' ? null : Number(value) }
+      }
+      return { ...item, [key]: value }
+    }))
+  }
+
+  if (!service) {
+    return <p className="admin-notice has-error" role="alert">Digital Marketing service content is unavailable. Run the existing content seed command after deployment, then reload this section.</p>
+  }
+
+  return (
+    <form className="admin-panel admin-form" onSubmit={(event) => {
+      event.preventDefault()
+      onSave(service, { ...(service.pricing || {}), packages })
+    }}>
+      <div className="admin-panel-heading">
+        <div><h2>Digital marketing packages</h2><p>Package names and prices are fixed to the requested Bronze, Silver, and Gold tiers. Add only confirmed service inclusions and quantities.</p></div>
+        <button className="admin-primary" type="submit"><Save aria-hidden="true" /> SAVE PACKAGES</button>
+      </div>
+      <div className="marketing-admin-grid">
+        {packages.map((item, index) => (
+          <section className="marketing-admin-card" key={item.name}>
+            <p className="section-kicker">PACKAGE</p>
+            <h3>{item.name}</h3>
+            <strong className="marketing-admin-price">KES {item.price.toLocaleString('en-KE')}</strong>
+            <div className="admin-form-grid">
+              <label className="admin-field-wide">Short description<textarea value={item.description} onChange={(event) => updatePackage(index, 'description', event.target.value)} rows="3" maxLength="500" /></label>
+              <label className="admin-field-wide">Included services<textarea value={(item.included_services || []).join('\n')} onChange={(event) => updatePackage(index, 'included_services', event.target.value)} rows="4" placeholder="One confirmed service per line" /></label>
+              <label>Number of platforms<input type="number" min="1" max="100" value={item.platform_count ?? ''} onChange={(event) => updatePackage(index, 'platform_count', event.target.value)} /></label>
+              <label>Content creation details<textarea value={item.content_details || ''} onChange={(event) => updatePackage(index, 'content_details', event.target.value)} rows="3" maxLength="1000" /></label>
+              <label className="admin-field-wide">Marketing management details<textarea value={item.management_details || ''} onChange={(event) => updatePackage(index, 'management_details', event.target.value)} rows="3" maxLength="1000" /></label>
+            </div>
+          </section>
+        ))}
       </div>
     </form>
   )
@@ -557,7 +647,7 @@ function CollectionEditor({ config, items, onSave, onDelete }) {
     if (field.type === 'select') {
       return <label key={field.key}>{field.label}<select {...common}>{field.options.map((option) => <option key={option}>{option}</option>)}</select></label>
     }
-    return <label key={field.key}>{field.label}<input {...common} type={field.type === 'number' ? 'number' : 'text'} min={field.type === 'number' ? 0 : undefined} /></label>
+    return <label key={field.key}>{field.label}<input {...common} type={field.type === 'number' ? 'number' : field.type === 'url' ? 'url' : 'text'} min={field.type === 'number' ? 0 : undefined} /></label>
   }
 
   return (
@@ -580,7 +670,7 @@ function CollectionEditor({ config, items, onSave, onDelete }) {
           <div className="admin-panel-heading"><h3>{selected ? 'Edit entry' : 'New entry'}</h3>{selected && <button type="button" className="admin-icon-button" onClick={beginNew} aria-label="Clear selection"><X aria-hidden="true" /></button>}</div>
           <div className="admin-form-grid">{config.fields.map(renderField)}</div>
           {validationError && <p className="admin-notice has-error" role="alert">{validationError}</p>}
-          {config === COLLECTIONS.projects && <label className="admin-upload"><ImagePlus aria-hidden="true" /> {uploading ? 'UPLOADING...' : 'REPLACE COVER IMAGE'}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => event.target.files?.[0] && uploadCoverImage(event.target.files[0])} /></label>}
+          {config === COLLECTIONS.projects && <label className="admin-upload"><ImagePlus aria-hidden="true" /> {uploading ? 'UPLOADING...' : 'UPLOAD PROJECT THUMBNAIL'}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => event.target.files?.[0] && uploadCoverImage(event.target.files[0])} /></label>}
           {(config === COLLECTIONS.projects || config === COLLECTIONS.services) && <label className="admin-upload"><ImagePlus aria-hidden="true" /> {uploading ? 'UPLOADING...' : config === COLLECTIONS.projects ? 'ADD PROJECT SCREENSHOTS' : 'UPLOAD SERVICE IMAGE'}<input type="file" accept="image/jpeg,image/png,image/webp" multiple={config === COLLECTIONS.projects} disabled={uploading} onChange={(event) => event.target.files?.length && uploadScreenshots(event.target.files)} /></label>}
           {uploadError && <p className="admin-notice has-error" role="alert">{uploadError}</p>}
           <button className="admin-primary" type="submit"><Save aria-hidden="true" /> {selected ? 'SAVE CHANGES' : 'CREATE ENTRY'}</button>

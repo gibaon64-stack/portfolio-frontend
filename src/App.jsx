@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { BrowserRouter, Link, NavLink, Navigate, Route, Routes } from 'react-router-dom'
-import { RotateCw, UserRound, Volume2, VolumeX, Wind } from 'lucide-react'
+import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom'
+import { RotateCw, Volume2, VolumeX, Wind } from 'lucide-react'
 import { AccountPage, AdminPage, RegisterPage, UserLoginPage } from './Admin'
-import HomeSections, { AboutPage, ContactPage, ProjectsPage, ServicesPage } from './HomeSections'
+import { AboutPage, ContactPage, ProfilePage, ProjectsPage, ServicesPage, SiteNavigation } from './HomeSections'
 import { getPortfolio } from './api'
 import './App.css'
 
@@ -125,25 +125,6 @@ function PaperLines() {
       <path d="M140 100C420 80 400 10 650 60S930 130 1190 80 1450-190 1410-460" />
       <path d="M160 40C440 30 420-30 670 20S950 70 1210 30 1470-230 1400-510" />
     </svg>
-  )
-}
-
-export function SiteNavigation() {
-  const navLinkClass = ({ isActive }) => `nav-link${isActive ? ' is-active' : ''}`
-
-  return (
-    <nav className="navigation" aria-label="Main navigation">
-      <div className="navigation-links">
-        <NavLink to="/" end className={navLinkClass}>Home</NavLink>
-        <NavLink to="/projects" className={navLinkClass}>Projects</NavLink>
-        <NavLink to="/services" className={navLinkClass}>Services</NavLink>
-        <NavLink to="/about" className={navLinkClass}>About Us</NavLink>
-        <NavLink to="/contact" className={navLinkClass}>Contact Us</NavLink>
-      </div>
-      <NavLink to="/login" className="account-link" aria-label="Sign in" title="Sign in">
-        <UserRound aria-hidden="true" />
-      </NavLink>
-    </nav>
   )
 }
 
@@ -323,7 +304,7 @@ function Hero({ heroDescription, heroPoster }) {
         </h1>
 
         <div className="hero-actions">
-          <Link className="primary-action" to="/contact?service=Website%20Development&budget=KES%2075%2C000%20-%20450%2C000">
+          <Link className="primary-action" to="/services">
             LET&apos;S CODE
           </Link>
           <Link className="secondary-action" to="/contact">DO INQUIRY</Link>
@@ -351,7 +332,7 @@ function HomePage({ portfolio, loadError }) {
   return (
     <>
       <Hero heroDescription={portfolio?.profile?.hero_description} heroPoster={portfolio?.profile?.hero_image_url} />
-      <HomeSections portfolio={portfolio} loadError={loadError} />
+      {loadError && <p className="site-alert" role="status">{loadError}</p>}
     </>
   )
 }
@@ -372,6 +353,7 @@ export default function App() {
         <Route path="/" element={<HomePage portfolio={portfolio} loadError={loadError} />} />
         <Route path="/projects" element={<ProjectsPage portfolio={portfolio} loadError={loadError} />} />
         <Route path="/services" element={<ServicesPage portfolio={portfolio} loadError={loadError} />} />
+        <Route path="/profile" element={<ProfilePage portfolio={portfolio} loadError={loadError} />} />
         <Route path="/about" element={<AboutPage portfolio={portfolio} loadError={loadError} />} />
         <Route path="/contact" element={<ContactPage portfolio={portfolio} loadError={loadError} />} />
         <Route path="/register" element={<RegisterPage />} />
