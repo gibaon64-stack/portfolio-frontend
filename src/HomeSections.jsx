@@ -1,4 +1,5 @@
-import { ArrowUpRight } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { ArrowUpRight, CircleCheck, Menu, UserRound, X } from 'lucide-react'
 import { Link, NavLink, useSearchParams } from 'react-router-dom'
 import { submitInquiry } from './api'
 import './HomeSections.css'
@@ -14,15 +15,32 @@ function safeUrl(value) {
 
 export function SiteNavigation() {
   const navLinkClass = ({ isActive }) => `nav-link${isActive ? ' is-active' : ''}`
+  const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <nav className="navigation" aria-label="Main navigation">
-      <div className="navigation-links">
+    <nav className={`navigation${menuOpen ? ' menu-open' : ''}`} aria-label="Main navigation">
+      <button
+        className="navigation-menu-toggle"
+        type="button"
+        aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen((open) => !open)}
+      >
+        {menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+      </button>
+      <div className="navigation-links" onClick={() => setMenuOpen(false)}>
         <NavLink to="/" end className={navLinkClass}>Home</NavLink>
-        <NavLink to="/projects" className={navLinkClass}>Coding</NavLink>
-        <NavLink to="/services" className={navLinkClass}>Let&apos;s Code</NavLink>
-        <NavLink to="/contact" className={navLinkClass}>Inquiry</NavLink>
-        <NavLink to="/profile" className={navLinkClass}>Profile</NavLink>
+        <NavLink to="/projects" className={navLinkClass}>Projects</NavLink>
+        <NavLink to="/services" className={navLinkClass}>Services</NavLink>
+        <NavLink to="/about" className={navLinkClass}>About Us</NavLink>
+        <NavLink
+          to="/profile"
+          className={({ isActive }) => `account-link${isActive ? ' is-active' : ''}`}
+          aria-label="Profile"
+          title="Profile"
+        >
+          <UserRound aria-hidden="true" />
+        </NavLink>
       </div>
     </nav>
   )
@@ -287,15 +305,27 @@ export function ProjectsPage({ portfolio, loadError }) {
 
 const WEBSITE_OPTIONS = [
   {
-    name: 'Informative / Business Websites',
-    description: 'A clear online home for a business, company, professional, or service.',
-    audience: 'Businesses, organisations, service providers, and professionals who need a credible web presence.',
-    features: ['Business landing pages', 'Corporate websites', 'Personal portfolio websites', 'Company profile websites', 'Service-based websites'],
-    functional: 'Agree the pages, information structure, contact actions, and any content editing needs before development.',
-    design: 'Responsive layouts, clear brand presentation, readable content, and navigation suited to the audience.',
-    backend: 'A backend or CMS is scoped only when content management, forms, or other server-side features are required.',
+    name: 'Informational Websites',
+    description: 'A clear, accessible home for sharing information, updates, and ways to get in touch.',
+    audience: 'Organisations, community groups, and professionals who need a focused online information resource.',
+    features: ['Information and resource pages', 'News or updates', 'Searchable content', 'Accessible navigation', 'Contact details'],
+    functional: 'Agree the content sections, publishing needs, search or filtering, and contact actions.',
+    design: 'Readable page layouts, clear information hierarchy, accessible contrast, and responsive navigation.',
+    backend: 'A backend or CMS is needed only for managed updates, submissions, or other server-side features.',
     addOns: ['Content management', 'Additional integrations', 'Maintenance and support'],
-    scope: 'A focused website with agreed pages and responsive layouts.',
+    scope: 'A focused information site with agreed pages and publishing features.',
+    price: 'Starting from KES 15,000',
+  },
+  {
+    name: 'Business Websites',
+    description: 'A professional website that explains your business, services, and value to customers.',
+    audience: 'Businesses, service providers, and organisations that need a credible online presence.',
+    features: ['Business landing pages', 'Company profile pages', 'Service listings', 'Lead-generation forms', 'Location and contact information'],
+    functional: 'Confirm pages, calls to action, lead capture, content ownership, and required third-party integrations.',
+    design: 'A consistent brand presentation with clear messaging, accessible navigation, and mobile-first layouts.',
+    backend: 'A CMS, booking flow, or customer-management integration is scoped when the business needs it.',
+    addOns: ['Content management', 'Booking integrations', 'Analytics and maintenance'],
+    scope: 'A responsive business site with an agreed set of pages and lead-generation features.',
     price: 'Starting from KES 15,000',
   },
   {
@@ -311,18 +341,6 @@ const WEBSITE_OPTIONS = [
     price: 'Custom quotation based on requirements',
   },
   {
-    name: 'Web Applications',
-    description: 'Interactive browser-based systems for customers, teams, and business operations.',
-    audience: 'Teams and businesses with workflows that need more than a content-focused website.',
-    features: ['Business management systems', 'SaaS platforms', 'Customer portals', 'Booking platforms', 'Custom web-based systems'],
-    functional: 'User roles, core workflows, reporting needs, external integrations, and operational rules are defined during discovery.',
-    design: 'Task-focused interfaces, accessible forms, clear system feedback, and responsive dashboards.',
-    backend: 'Application APIs, authentication, and database requirements depend on the agreed workflows.',
-    addOns: ['Third-party integrations', 'Reporting dashboards', 'Role-based access'],
-    scope: 'Custom quotation based on complexity',
-    price: 'Custom quotation based on complexity',
-  },
-  {
     name: 'Portfolio and Personal Websites',
     description: 'A focused personal brand and work showcase tailored to a professional or creator.',
     audience: 'Developers, creatives, consultants, and professionals who want a dedicated portfolio.',
@@ -333,6 +351,18 @@ const WEBSITE_OPTIONS = [
     addOns: ['Project case studies', 'Content management', 'Contact integrations'],
     scope: 'Custom quotation based on requirements',
     price: 'Custom quotation based on requirements',
+  },
+  {
+    name: 'Web Applications',
+    description: 'Interactive browser-based systems for customers, teams, and business operations.',
+    audience: 'Teams and businesses with workflows that need more than a content-focused website.',
+    features: ['Business management systems', 'SaaS platforms', 'Customer portals', 'Booking platforms', 'Custom web-based systems'],
+    functional: 'User roles, core workflows, reporting needs, external integrations, and operational rules are defined during discovery.',
+    design: 'Task-focused interfaces, accessible forms, clear system feedback, and responsive dashboards.',
+    backend: 'Application APIs, authentication, and database requirements depend on the agreed workflows.',
+    addOns: ['Third-party integrations', 'Reporting dashboards', 'Role-based access'],
+    scope: 'Custom quotation based on complexity',
+    price: 'Custom quotation based on complexity',
   },
 ]
 
@@ -415,9 +445,14 @@ export function ServicesPage({ portfolio, loadError }) {
                     <p><strong>Backend requirements</strong>{option.backend}</p>
                     <RequirementList title="Optional additions" items={option.addOns} />
                     <p><strong>Estimated scope</strong>{option.scope}</p>
-                    <Link className="service-cta" to={`/contact?service=${encodeURIComponent(option.name)}&budget=${encodeURIComponent(option.price)}`}>Discuss this website <ArrowUpRight aria-hidden="true" /></Link>
                   </div>
                 </details>
+                <Link
+                  className="service-cta"
+                  to={`/contact?consultation=1&service=${encodeURIComponent(option.name)}&budget=${encodeURIComponent(option.price)}`}
+                >
+                  Discuss this website <ArrowUpRight aria-hidden="true" />
+                </Link>
               </article>
             ))}
           </div>
@@ -499,13 +534,26 @@ export function ContactPage({ portfolio, loadError }) {
   const [searchParams] = useSearchParams()
   const [selectedService, setSelectedService] = useState(searchParams.get('service') || '')
   const [selectedBudget, setSelectedBudget] = useState(searchParams.get('budget') || '')
+  const [submittedInquiry, setSubmittedInquiry] = useState(null)
+  const idempotencyKey = useRef('')
+  const isConsultation = searchParams.get('consultation') === '1'
 
   const services = portfolio?.services || []
   const serviceOptions = Array.from(new Set([...services.map((service) => service.title), selectedService].filter(Boolean)))
   const profile = portfolio?.profile || {}
+  const [minimumDate] = useState(() => {
+    const eatDateParts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Africa/Nairobi',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(new Date())
+    return `${eatDateParts.find((part) => part.type === 'year')?.value}-${eatDateParts.find((part) => part.type === 'month')?.value}-${eatDateParts.find((part) => part.type === 'day')?.value}`
+  })
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+    if (formState === 'submitting') return
     setFormState('submitting')
     setFormError('')
 
@@ -514,12 +562,17 @@ export function ContactPage({ portfolio, loadError }) {
     const inquiry = Object.fromEntries(formData.entries())
     inquiry.phone = inquiry.phone || null
     inquiry.budget = inquiry.budget || selectedBudget || null
+    idempotencyKey.current ||= window.crypto.randomUUID()
 
     try {
-      await submitInquiry(inquiry)
-      form.reset()
-      setSelectedService('')
-      setSelectedBudget('')
+      await submitInquiry(inquiry, idempotencyKey.current)
+      setSubmittedInquiry({
+        service: inquiry.service,
+        date: inquiry.consultation_date || '',
+        time: inquiry.consultation_time || '',
+        email: inquiry.email,
+      })
+      idempotencyKey.current = ''
       setFormState('success')
     } catch (error) {
       setFormState('error')
@@ -550,28 +603,60 @@ export function ContactPage({ portfolio, loadError }) {
             </div>
           </div>
 
-          <form className="inquiry-form" onSubmit={handleSubmit}>
-            <label>Full name<input name="name" autoComplete="name" required maxLength="120" /></label>
-            <label>Email address<input name="email" type="email" autoComplete="email" required maxLength="254" /></label>
-            <label>Phone number<span>(optional)</span><input name="phone" type="tel" autoComplete="tel" maxLength="40" /></label>
-            <label>Business name<span>(optional)</span><input name="business_name" maxLength="160" /></label>
-            <label>Service required
-              <select name="service" value={selectedService} onChange={(event) => setSelectedService(event.target.value)} required>
-                <option value="" disabled>Select a service</option>
-                {serviceOptions.map((service) => <option key={service} value={service}>{service}</option>)}
-                <option value="Other">Other</option>
-              </select>
-            </label>
-            <label>Estimated budget<input name="budget" value={selectedBudget} onChange={(event) => setSelectedBudget(event.target.value)} maxLength="80" /></label>
-            <label>Preferred delivery timeline<input name="timeline" maxLength="120" /></label>
-            <label className="form-wide">Project description<textarea name="message" required rows="5" maxLength="5000" /></label>
-            <button className="submit-button" type="submit" disabled={formState === 'submitting'}>
-              {formState === 'submitting' ? 'SENDING...' : 'SUBMIT INQUIRY'}
-            </button>
-            <p className="form-feedback" role="status">
-              {formState === 'success' ? 'Thanks. Your inquiry has been received.' : formError}
-            </p>
-          </form>
+          {formState === 'success' ? (
+            <section className="inquiry-success" aria-live="polite">
+              <CircleCheck className="success-check" aria-hidden="true" />
+              <p className="section-kicker">REQUEST CONFIRMED</p>
+              <h2>Request Successfully Submitted!</h2>
+              <p>Thank you for choosing Mabrixel Technologies. We have received your project inquiry and will get back to you shortly.</p>
+              <dl className="inquiry-summary">
+                <div><dt>Selected service</dt><dd>{submittedInquiry?.service}</dd></div>
+                {submittedInquiry?.date && <div><dt>Consultation date</dt><dd>{submittedInquiry.date}</dd></div>}
+                {submittedInquiry?.time && <div><dt>Preferred time (EAT)</dt><dd>{submittedInquiry.time}</dd></div>}
+                <div><dt>Contact email</dt><dd>{submittedInquiry?.email}</dd></div>
+              </dl>
+              <Link className="service-cta" to="/">Back to Home <ArrowUpRight aria-hidden="true" /></Link>
+            </section>
+          ) : (
+            <form className="inquiry-form" onSubmit={handleSubmit}>
+              <label>Full name<input name="name" autoComplete="name" required maxLength="120" /></label>
+              <label>Email address<input name="email" type="email" autoComplete="email" required maxLength="254" /></label>
+              <label>Phone number{!isConsultation && <span>(optional)</span>}<input name="phone" type="tel" autoComplete="tel" required={isConsultation} maxLength="40" /></label>
+              <label>Business name<span>(optional)</span><input name="business_name" maxLength="160" /></label>
+              {isConsultation ? (
+                <label>Selected website category
+                  <input type="text" value={selectedService} readOnly required aria-readonly="true" />
+                  <input type="hidden" name="service" value={selectedService} />
+                </label>
+              ) : (
+                <label>Service required
+                  <select name="service" value={selectedService} onChange={(event) => setSelectedService(event.target.value)} required>
+                    <option value="" disabled>Select a service</option>
+                    {serviceOptions.map((service) => <option key={service} value={service}>{service}</option>)}
+                    <option value="Other">Other</option>
+                  </select>
+                </label>
+              )}
+              {!isConsultation && <label>Estimated budget<input name="budget" value={selectedBudget} onChange={(event) => setSelectedBudget(event.target.value)} maxLength="80" /></label>}
+              {!isConsultation && <label>Preferred delivery timeline<input name="timeline" maxLength="120" /></label>}
+              {isConsultation && (
+                <>
+                  <label>Preferred consultation date
+                    <input name="consultation_date" type="date" min={minimumDate} required />
+                  </label>
+                  <label>Preferred consultation time (EAT)
+                    <input name="consultation_time" type="time" step="900" required />
+                  </label>
+                </>
+              )}
+              <label className="form-wide">Project description<textarea name="message" required rows="5" maxLength="5000" /></label>
+              {isConsultation && <label className="form-wide">Additional requirements<span>(optional)</span><textarea name="additional_requirements" rows="4" maxLength="5000" /></label>}
+              <button className="submit-button" type="submit" disabled={formState === 'submitting'}>
+                {formState === 'submitting' ? 'SENDING...' : isConsultation ? 'REQUEST CONSULTATION' : 'SUBMIT INQUIRY'}
+              </button>
+              {formError && <p className="form-feedback form-error" role="alert">{formError}</p>}
+            </form>
+          )}
         </section>
       </main>
     </div>

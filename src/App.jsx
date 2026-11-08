@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom'
 import { RotateCw, Volume2, VolumeX, Wind } from 'lucide-react'
 import { AccountPage, AdminPage, RegisterPage, UserLoginPage } from './Admin'
 import { AboutPage, ContactPage, ProfilePage, ProjectsPage, ServicesPage, SiteNavigation } from './HomeSections'
+import MabrookAssistant from './MabrookAssistant'
 import { getPortfolio } from './api'
 import './App.css'
 
@@ -267,6 +268,11 @@ function Hero({ heroDescription, heroPoster }) {
       <SiteNavigation />
 
       <div className="hero-visual">
+        <div className="mobile-hero-copy">
+          <p>Welcome to Mabrixel Technologies.</p>
+          <h2>Our dreams evolve into reality.</h2>
+          <p>Come, let&apos;s build together.</p>
+        </div>
         <h1 className="wordmark" aria-label="Coding">
           <span className="word-half">C</span>
           <span className="pill">
@@ -340,11 +346,33 @@ function HomePage({ portfolio, loadError }) {
 export default function App() {
   const [portfolio, setPortfolio] = useState(null)
   const [loadError, setLoadError] = useState('')
+  const [portfolioLoading, setPortfolioLoading] = useState(true)
+
+  const refreshPortfolio = useCallback(async () => {
+    setPortfolioLoading(true)
+    setLoadError('')
+    try {
+      setPortfolio(await getPortfolio())
+    } catch {
+      setLoadError('Portfolio content is temporarily unavailable. Check your connection and retry.')
+    } finally {
+      setPortfolioLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
+    let active = true
     getPortfolio()
-      .then(setPortfolio)
-      .catch(() => setLoadError('Portfolio content is temporarily unavailable.'))
+      .then((content) => {
+        if (active) setPortfolio(content)
+      })
+      .catch(() => {
+        if (active) setLoadError('Portfolio content is temporarily unavailable. Check your connection and retry.')
+      })
+      .finally(() => {
+        if (active) setPortfolioLoading(false)
+      })
+    return () => { active = false }
   }, [])
 
   return (
@@ -363,6 +391,13 @@ export default function App() {
         <Route path="/admin/*" element={<AdminPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      {(portfolioLoading || loadError) && (
+        <div className="portfolio-status" role={loadError ? 'alert' : 'status'}>
+          <span>{portfolioLoading ? 'Loading the latest portfolio content…' : loadError}</span>
+          {loadError && <button type="button" onClick={refreshPortfolio}>Retry</button>}
+        </div>
+      )}
+      <MabrookAssistant />
     </BrowserRouter>
   )
 }

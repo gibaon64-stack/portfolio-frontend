@@ -1,0 +1,282 @@
+.mabrook-widget {
+  position: fixed;
+  z-index: 20;
+  right: calc(20px + env(safe-area-inset-right, 0px));
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  font-family: inherit;
+}
+
+.mabrook-launcher {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  background: #1d1d1d;
+  box-shadow: 0 8px 26px rgba(29, 29, 29, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: mabrook-pulse 3.2s ease-in-out infinite;
+}
+
+.mabrook-launcher:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 11px 30px rgba(29, 29, 29, 0.25);
+}
+
+.mabrook-launcher svg {
+  width: 22px;
+  height: 22px;
+}
+
+.mabrook-panel {
+  position: absolute;
+  right: 0;
+  bottom: 68px;
+  display: grid;
+  width: min(390px, calc(100vw - 32px));
+  height: min(590px, calc(100dvh - 112px));
+  min-height: 360px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  border: 1px solid #dededb;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 18px 60px rgba(29, 29, 29, 0.18);
+}
+
+.mabrook-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid #e8e8e5;
+}
+
+.mabrook-avatar {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #1d1d1d;
+}
+
+.mabrook-avatar svg {
+  width: 18px;
+  height: 18px;
+}
+
+.mabrook-title {
+  display: grid;
+  flex: 1;
+  gap: 3px;
+}
+
+.mabrook-title strong {
+  font-size: 14px;
+}
+
+.mabrook-title span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b6b66;
+  font-size: 11px;
+}
+
+.mabrook-title i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.mabrook-title .is-online i {
+  background: #48a879;
+}
+
+.mabrook-title .is-offline i {
+  background: #a3a39e;
+}
+
+.mabrook-close,
+.mabrook-composer button {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: #333;
+  background: transparent;
+  cursor: pointer;
+}
+
+.mabrook-close:hover {
+  background: #f2f2f1;
+}
+
+.mabrook-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  padding: 16px;
+  overscroll-behavior: contain;
+}
+
+.mabrook-message {
+  max-width: 90%;
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.model-message {
+  align-self: flex-start;
+  border: 1px solid #e8e8e5;
+  border-bottom-left-radius: 5px;
+  color: #292927;
+  background: #f7f7f5;
+}
+
+.user-message {
+  align-self: flex-end;
+  border-bottom-right-radius: 5px;
+  color: #fff;
+  background: #242424;
+}
+
+.mabrook-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.mabrook-quick-actions button {
+  max-width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #dededb;
+  border-radius: 999px;
+  color: #333;
+  background: #fff;
+  font: inherit;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mabrook-quick-actions button:hover {
+  border-color: #292927;
+}
+
+.mabrook-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mabrook-loading svg {
+  width: 15px;
+  height: 15px;
+  animation: mabrook-spin 1s linear infinite;
+}
+
+.mabrook-composer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid #e8e8e5;
+}
+
+.mabrook-composer input {
+  min-width: 0;
+  height: 42px;
+  flex: 1;
+  padding: 0 12px;
+  border: 1px solid #dededb;
+  border-radius: 999px;
+  outline-offset: 2px;
+  font: inherit;
+  font-size: 13px;
+}
+
+.mabrook-composer button {
+  color: #fff;
+  background: #1d1d1d;
+}
+
+.mabrook-composer button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.mabrook-composer button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.mabrook-error {
+  width: 100%;
+  margin: 0;
+  color: #a42b2b;
+  font-size: 12px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+@keyframes mabrook-pulse {
+  50% { box-shadow: 0 8px 26px rgba(29, 29, 29, 0.2), 0 0 0 6px rgba(29, 29, 29, 0.06); }
+}
+
+@keyframes mabrook-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 480px) {
+  .mabrook-widget {
+    right: calc(14px + env(safe-area-inset-right, 0px));
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .mabrook-launcher {
+    width: 50px;
+    height: 50px;
+  }
+
+  .mabrook-panel {
+    position: fixed;
+    inset: calc(8px + env(safe-area-inset-top, 0px)) calc(8px + env(safe-area-inset-right, 0px)) calc(74px + env(safe-area-inset-bottom, 0px)) calc(8px + env(safe-area-inset-left, 0px));
+    width: auto;
+    height: auto;
+    min-height: 0;
+    border-radius: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mabrook-launcher,
+  .mabrook-loading svg {
+    animation: none;
+  }
+}

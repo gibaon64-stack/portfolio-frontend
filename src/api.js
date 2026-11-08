@@ -42,11 +42,23 @@ export function getPortfolio() {
   return request('/portfolio')
 }
 
-export function submitInquiry(inquiry) {
+export function submitInquiry(inquiry, idempotencyKey) {
   return request('/inquiries', {
     method: 'POST',
+    headers: idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : undefined,
     body: JSON.stringify(inquiry),
   })
+}
+
+export function sendAssistantMessage(message, history) {
+  return request('/assistant/chat', {
+    method: 'POST',
+    body: JSON.stringify({ message, history }),
+  })
+}
+
+export function getAssistantStatus() {
+  return request('/assistant/status')
 }
 
 export async function loginAdmin(credentials) {

@@ -374,6 +374,13 @@ function ProfileEditor({ profile, onSave }) {
   const [form, setForm] = useState(profile || { name: 'Ian Mabruk', professional_title: '', introduction: '', skills: [], experience: [], education: [], certifications: [], hero_description: '', hero_image_url: '', about_intro: '', about_who_we_are: '', about_mission: '', about_what_we_do: '', about_approach: '', about_why_choose_us: '', location: 'Kenya', email: '', phone: '', photo_url: '' })
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
+  const [pendingPhoto, setPendingPhoto] = useState(null)
+  const [photoPreview, setPhotoPreview] = useState(profile?.photo_url || '')
+
+  useEffect(() => {
+    if (photoPreview.startsWith('blob:')) return () => URL.revokeObjectURL(photoPreview)
+    return undefined
+  }, [photoPreview])
 
   function update(key, value) {
     setForm((current) => ({ ...current, [key]: value }))
@@ -391,7 +398,12 @@ function ProfileEditor({ profile, onSave }) {
       body.append('image', file)
       body.append('context', 'about')
       const result = await saveAdminResource('/admin/uploads', 'POST', body)
-      update('photo_url', resolveApiUrl(result.url))
+      const photoUrl = resolveApiUrl(result.url)
+      const updatedProfile = { ...form, photo_url: photoUrl }
+      update('photo_url', photoUrl)
+      setPhotoPreview(photoUrl)
+      setPendingPhoto(null)
+      await onSave({ name: profile?.name || 'Ian Mabruk', ...updatedProfile })
     } catch (error) {
       setUploadError(error.message)
     } finally {
@@ -407,7 +419,9 @@ function ProfileEditor({ profile, onSave }) {
       body.append('image', file)
       body.append('context', 'homepage')
       const result = await saveAdminResource('/admin/uploads', 'POST', body)
-      update('hero_image_url', resolveApiUrl(result.url))
+      const updatedProfile = { ...form, hero_image_url: resolveApiUrl(result.url) }
+      update('hero_image_url', updatedProfile.hero_image_url)
+      await onSave({ name: profile?.name || 'Ian Mabruk', ...updatedProfile })
     } catch (error) {
       setUploadError(error.message)
     } finally {
@@ -438,7 +452,9 @@ function ProfileEditor({ profile, onSave }) {
         <label className="admin-field-wide">Our Approach<textarea value={form.about_approach || ''} onChange={(event) => update('about_approach', event.target.value)} rows="3" maxLength="3000" /></label>
         <label className="admin-field-wide">Why Choose Us<textarea value={form.about_why_choose_us || ''} onChange={(event) => update('about_why_choose_us', event.target.value)} rows="3" maxLength="3000" /></label>
         <label className="admin-field-wide">Profile photo URL<input value={form.photo_url || ''} onChange={(event) => update('photo_url', event.target.value)} maxLength="500" /></label>
-        <label className="admin-upload"><ImagePlus aria-hidden="true" /> {uploading ? 'UPLOADING...' : 'UPLOAD PROFILE PHOTO'}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => event.target.files?.[0] && uploadPhoto(event.target.files[0])} /></label>
+        {photoPreview && <img className="admin-image-preview admin-field-wide" src={photoPreview} alt="Profile image preview" />}
+        <label className="admin-upload"><ImagePlus aria-hidden="true" /> CHOOSE PROFILE PHOTO<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => { const file = event.target.files?.[0]; if (file) { setPendingPhoto(file); setPhotoPreview(URL.createObjectURL(file)) } }} /></label>
+        {pendingPhoto && <button className="admin-secondary" type="button" disabled={uploading} onClick={() => uploadPhoto(pendingPhoto)}>{uploading ? 'UPLOADING...' : 'UPLOAD SELECTED PHOTO'}</button>}
         <label className="admin-upload"><ImagePlus aria-hidden="true" /> {uploading ? 'UPLOADING...' : 'UPLOAD HOMEPAGE POSTER'}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => event.target.files?.[0] && uploadHeroPoster(event.target.files[0])} /></label>
         {uploadError && <p className="admin-notice has-error" role="alert">{uploadError}</p>}
       </div>
