@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import { BrowserRouter, Link, NavLink, Navigate, Route, Routes } from 'react-router-dom'
 import { RotateCw, UserRound, Volume2, VolumeX, Wind } from 'lucide-react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { AccountPage, AdminPage } from './Admin'
-import HomeSections from './HomeSections'
+import { AccountPage, AdminPage, RegisterPage, UserLoginPage } from './Admin'
+import HomeSections, { AboutPage, ContactPage, ProjectsPage, ServicesPage } from './HomeSections'
 import { getPortfolio } from './api'
 import './App.css'
 
@@ -49,9 +49,7 @@ function makeRevealKeyframes(isMobile) {
     {
       offset: 0.3,
       '--pill-width': isMobile ? '1.81em' : '0.16em',
-      '--pill-height': isMobile
-        ? 'calc(1.81em * 0.1)'
-        : '1.81em',
+      '--pill-height': isMobile ? 'calc(1.81em * 0.1)' : '1.81em',
       '--hairline-opacity': '0',
       easing: EASE_PILL_CIRCLE,
     },
@@ -62,9 +60,7 @@ function makeRevealKeyframes(isMobile) {
     {
       offset: 0.58,
       '--pill-width': '1.81em',
-      '--pill-height': isMobile
-        ? 'calc(1.81em * 0.55)'
-        : '1.81em',
+      '--pill-height': isMobile ? 'calc(1.81em * 0.55)' : '1.81em',
       '--word-gap': isMobile ? '0.06em' : '0.05em',
       easing: EASE_PILL_FINAL,
     },
@@ -112,12 +108,7 @@ function applyFinalState(scene, isMobile) {
 
 function PaperLines() {
   return (
-    <svg
-      className="paper-lines"
-      viewBox="0 0 1440 960"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-    >
+    <svg className="paper-lines" viewBox="0 0 1440 960" preserveAspectRatio="none" aria-hidden="true">
       <path d="M-90 880C170 790 120 580 390 580S680 900 930 730 1190 330 1540 190" />
       <path d="M-80 820C180 730 150 530 410 540S690 850 950 680 1210 290 1530 140" />
       <path d="M-70 760C200 680 180 480 430 500S710 790 970 630 1230 250 1520 90" />
@@ -137,17 +128,32 @@ function PaperLines() {
   )
 }
 
-function Hero({ heroDescription }) {
+export function SiteNavigation() {
+  const navLinkClass = ({ isActive }) => `nav-link${isActive ? ' is-active' : ''}`
+
+  return (
+    <nav className="navigation" aria-label="Main navigation">
+      <div className="navigation-links">
+        <NavLink to="/" end className={navLinkClass}>Home</NavLink>
+        <NavLink to="/projects" className={navLinkClass}>Projects</NavLink>
+        <NavLink to="/services" className={navLinkClass}>Services</NavLink>
+        <NavLink to="/about" className={navLinkClass}>About Us</NavLink>
+        <NavLink to="/contact" className={navLinkClass}>Contact Us</NavLink>
+      </div>
+      <NavLink to="/login" className="account-link" aria-label="Sign in" title="Sign in">
+        <UserRound aria-hidden="true" />
+      </NavLink>
+    </nav>
+  )
+}
+
+function Hero({ heroDescription, heroPoster }) {
   const sceneRef = useRef(null)
   const videoRef = useRef(null)
   const animationRef = useRef(null)
   const [wavesVisible, setWavesVisible] = useState(true)
-  const [isAnimating, setIsAnimating] = useState(
-    () => !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-  )
-  const [reducedMotion, setReducedMotion] = useState(
-    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-  )
+  const [isAnimating, setIsAnimating] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
   const isRecording = new URLSearchParams(window.location.search).get('rec') === '1'
 
   useEffect(() => {
@@ -186,9 +192,7 @@ function Hero({ heroDescription }) {
     }
 
     window.__recVideo = (time) => {
-      const duration = Number.isFinite(video.duration) && video.duration > 0
-        ? video.duration
-        : 4.25
+      const duration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 4.25
       const frameTime = (time % duration) + 1 / 120
       const safeTime = Math.min(frameTime, Math.max(0, duration - 1 / 120))
 
@@ -279,102 +283,100 @@ function Hero({ heroDescription }) {
         <PaperLines />
       </div>
 
-      <nav className="navigation" aria-label="Main navigation">
-        <div className="navigation-links">
-          <a href="#hero">Home</a>
-          <span aria-hidden="true">·</span>
-          <a href="#projects">Projects</a>
-          <span aria-hidden="true">·</span>
-          <a href="#services">Services</a>
-          <span aria-hidden="true">·</span>
-          <a href="#contact">Contact Us</a>
-        </div>
-        <a className="account-link" href="/account" aria-label="Create account" title="Create account">
-          <UserRound aria-hidden="true" />
-        </a>
-      </nav>
+      <SiteNavigation />
 
-      <h1 className="wordmark" aria-label="Code">
-        <span className="word-half">C</span>
-        <span className="pill">
-          <video
-            ref={videoRef}
-            className="island-video"
-            src={VIDEO_URL}
-            poster={POSTER_URL}
-            autoPlay={!reducedMotion}
-            muted
-            loop
-            playsInline
-            preload="auto"
-            aria-hidden="true"
-          />
-          <span className="hairline" />
-          <span className="pill-icon pill-icon-left">
-            <Wind aria-hidden="true" />
-          </span>
-          <button
-            className="pill-icon pill-icon-right sound-toggle"
-            type="button"
-            aria-label={`Toggle speaker waves; video remains silent (${wavesVisible ? 'on' : 'off'})`}
-            aria-pressed={wavesVisible}
-            title="Toggle speaker waves; video remains silent"
-            onClick={() => setWavesVisible((visible) => !visible)}
-          >
-            <SpeakerIcon aria-hidden="true" />
-          </button>
-        </span>
-        <span className="word-half">DE</span>
-      </h1>
-
-      <footer className="footer" id="footer">
-        <div className="footer-inner">
-          <p className="footer-copy">
-            <span className="drop-cap">{(heroDescription || 'Welcome').slice(0, 1)}</span>
-            {(heroDescription || 'Welcome to Mabrixel Technologies, a world where dreams evolve into reality. Come, let\'s build together the software of your dreams: technology designed to solve your everyday problems and transform your ideas into reality.').slice(1)}
-          </p>
-          <div className="footer-actions">
-            <span className="footer-rule" aria-hidden="true" />
+      <div className="hero-visual">
+        <h1 className="wordmark" aria-label="Coding">
+          <span className="word-half">C</span>
+          <span className="pill">
+            <video
+              ref={videoRef}
+              className="island-video"
+              src={VIDEO_URL}
+              poster={heroPoster || POSTER_URL}
+              autoPlay={!reducedMotion}
+              muted
+              loop
+              playsInline
+              preload="auto"
+              aria-hidden="true"
+            />
+            <span className="hairline" />
+            <span className="pill-icon pill-icon-left">
+              <Wind aria-hidden="true" />
+            </span>
             <button
-              className="replay-control"
+              className="pill-icon pill-icon-right sound-toggle"
               type="button"
-              onClick={replayReveal}
-              disabled={reducedMotion || isAnimating}
-              aria-label="Replay hero reveal"
-              title="Replay hero reveal"
+              aria-label={`Toggle speaker waves; video remains silent (${wavesVisible ? 'on' : 'off'})`}
+              aria-pressed={wavesVisible}
+              title="Toggle speaker waves; video remains silent"
+              onClick={() => setWavesVisible((visible) => !visible)}
             >
-              <RotateCw aria-hidden="true" />
+              <SpeakerIcon aria-hidden="true" />
             </button>
-            <a className="replay-button" href="#contact">GET STARTED</a>
-            <a className="socials-button" href="#socials">OUR SOCIALS</a>
-          </div>
+          </span>
+          <span className="word-half">D</span>
+          <span className="word-half">I</span>
+          <span className="word-half">N</span>
+          <span className="word-half">G</span>
+        </h1>
+
+        <div className="hero-actions">
+          <Link className="primary-action" to="/contact?service=Website%20Development&budget=KES%2075%2C000%20-%20450%2C000">
+            LET&apos;S CODE
+          </Link>
+          <Link className="secondary-action" to="/contact">DO INQUIRY</Link>
         </div>
-      </footer>
+      </div>
+
+      <div className="hero-footer-bar" aria-hidden="true">
+        <button
+          className="replay-control"
+          type="button"
+          onClick={replayReveal}
+          disabled={reducedMotion || isAnimating}
+          aria-label="Replay hero reveal"
+          title="Replay hero reveal"
+        >
+          <RotateCw aria-hidden="true" />
+        </button>
+        <span className="hero-attribute">{heroDescription || 'Technology built to solve everyday problems.'}</span>
+      </div>
     </main>
   )
 }
 
-function HomePage() {
-  const [portfolio, setPortfolio] = useState(null)
-  const [loadError, setLoadError] = useState('')
-
-  useEffect(() => {
-    getPortfolio().then(setPortfolio).catch(() => setLoadError('Portfolio content is temporarily unavailable.'))
-  }, [])
-
+function HomePage({ portfolio, loadError }) {
   return (
     <>
-      <Hero heroDescription={portfolio?.profile?.hero_description} />
+      <Hero heroDescription={portfolio?.profile?.hero_description} heroPoster={portfolio?.profile?.hero_image_url} />
       <HomeSections portfolio={portfolio} loadError={loadError} />
     </>
   )
 }
 
 export default function App() {
+  const [portfolio, setPortfolio] = useState(null)
+  const [loadError, setLoadError] = useState('')
+
+  useEffect(() => {
+    getPortfolio()
+      .then(setPortfolio)
+      .catch(() => setLoadError('Portfolio content is temporarily unavailable.'))
+  }, [])
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<HomePage portfolio={portfolio} loadError={loadError} />} />
+        <Route path="/projects" element={<ProjectsPage portfolio={portfolio} loadError={loadError} />} />
+        <Route path="/services" element={<ServicesPage portfolio={portfolio} loadError={loadError} />} />
+        <Route path="/about" element={<AboutPage portfolio={portfolio} loadError={loadError} />} />
+        <Route path="/contact" element={<ContactPage portfolio={portfolio} loadError={loadError} />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login" element={<UserLoginPage />} />
+        <Route path="/admin/login" element={<AccountPage />} />
         <Route path="/account" element={<AccountPage />} />
         <Route path="/admin/*" element={<AdminPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />

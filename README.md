@@ -7,15 +7,18 @@ Set `VITE_API_BASE_URL` to `/api` locally or the deployed Flask API's `/api` URL
 for production builds. Locally, Vite proxies `/api` to Flask using
 `VITE_API_PROXY_TARGET`.
 
+## Deploy on Netlify
+
+Connect this repository to Netlify. The root `netlify.toml` configures the build
+and sets `VITE_API_BASE_URL=/api`; `public/_redirects` proxies API requests to
+the Render backend and rewrites client-side routes to `index.html`.
+
+Set the backend's `FRONTEND_ORIGIN` to this site's exact public origin.
+
 ## Deploy on Render
 
-Create a Blueprint from this repository and select `render.yaml`. When prompted
-for `VITE_API_BASE_URL`, enter the backend's public URL with `/api` appended,
-for example `https://mabrixel-portfolio-api.onrender.com/api`.
-
-The backend's `FRONTEND_ORIGIN` must be set to this static site's exact public
-origin, for example `https://mabrixel-portfolio-frontend.onrender.com`.
-
+Alternatively, create a Blueprint from this repository and select `render.yaml`.
+Set `VITE_API_BASE_URL` to the backend's public URL with `/api` appended.
 The free configuration is suitable for a demo only; see the backend README for
 the free database and upload-storage limitations.
 

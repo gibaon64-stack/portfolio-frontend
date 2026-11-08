@@ -58,8 +58,26 @@ export async function loginAdmin(credentials) {
   return result.user
 }
 
-export function getCurrentAdmin() {
-  return request('/auth/me')
+export function registerUser(details) {
+  return request('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(details),
+  })
+}
+
+export async function loginUser(credentials) {
+  const result = await request('/auth/user/login', {
+    method: 'POST',
+    body: JSON.stringify(credentials),
+  })
+  csrfToken = result.csrf_token || readCsrfCookie()
+  return result.user
+}
+
+export async function getCurrentAdmin() {
+  const result = await request('/auth/me')
+  csrfToken = result.csrf_token || readCsrfCookie()
+  return result
 }
 
 export function logoutAdmin() {

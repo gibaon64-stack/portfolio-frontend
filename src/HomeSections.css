@@ -1,12 +1,34 @@
-.site-content {
+﻿.site-content {
   color: #1d1d1d;
   background: #f2f2f1;
 }
 
-.content-section {
-  padding: clamp(72px, 9vw, 144px) max(24px, calc((100vw - 1200px) / 2));
-  border-top: 1px solid #d5d5d2;
-  scroll-margin-top: 64px;
+.page-shell {
+  min-height: 100vh;
+  background: #f2f2f1;
+  color: #1d1d1d;
+}
+
+.page-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 6.5rem 1.5rem 4rem;
+}
+
+.page-layout-narrow {
+  max-width: 1100px;
+}
+
+.page-header {
+  margin-bottom: 2.5rem;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: clamp(38px, 4vw, 72px);
+  font-weight: 550;
+  line-height: 0.98;
+  letter-spacing: -0.045em;
 }
 
 .section-kicker {
@@ -25,7 +47,11 @@
 
 .section-heading h2,
 .contact-heading h2,
-.socials-section h2 {
+.socials-section h2,
+.info-card h2,
+.contact-panel h2,
+.service-card h2,
+.page-header h1 {
   margin: 0;
   font-size: clamp(34px, 4vw, 60px);
   font-weight: 550;
@@ -91,13 +117,18 @@
 }
 
 .profile-copy > p:not(.section-kicker),
-.contact-heading > p:not(.section-kicker) {
+.contact-heading > p:not(.section-kicker),
+.info-card p,
+.contact-panel p,
+.service-description,
+.service-row-compact p {
   color: #3a3a3a;
   font-size: 16px;
   line-height: 1.7;
 }
 
-.profile-location {
+.profile-location,
+.meta-copy {
   margin-top: 18px;
   color: #73736f !important;
   font-size: 13px !important;
@@ -127,7 +158,8 @@
 
 .journey-list,
 .project-list,
-.service-list {
+.service-list,
+.tag-list {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -151,7 +183,9 @@
 
 .journey-entry h3,
 .project-copy h3,
-.service-row h3 {
+.service-row h3,
+.service-row-compact h3,
+.profile-strip h3 {
   margin: 0 0 10px;
   font-size: 23px;
   font-weight: 550;
@@ -160,7 +194,8 @@
 
 .journey-entry p:not(.section-kicker),
 .project-copy > p:not(.section-kicker),
-.service-row > div > p {
+.service-row > div > p,
+.service-row-compact p {
   max-width: 720px;
   margin: 0;
   color: #3a3a3a;
@@ -379,6 +414,15 @@
   text-decoration: none;
 }
 
+.service-image,
+.contact-image {
+  display: block;
+  width: min(100%, 22rem);
+  max-height: 16rem;
+  margin: 0 0 1rem;
+  object-fit: cover;
+}
+
 .inquiry-form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -454,6 +498,213 @@
   text-align: center;
 }
 
+.about-intro-card,
+.info-card,
+.service-card,
+.service-compare-panel,
+.contact-panel {
+  padding: 1.5rem;
+  border: 1px solid rgba(29, 29, 29, 0.12);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.about-intro-card {
+  margin-bottom: 1.75rem;
+}
+
+.about-intro-card p {
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+.story-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.info-card {
+  min-height: 200px;
+}
+
+.info-card-wide {
+  grid-column: 1 / -1;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 0.9rem;
+  margin-top: 1rem;
+}
+
+.tag-list li {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid rgba(29, 29, 29, 0.1);
+  background: #f5f5f4;
+  font-size: 0.76rem;
+  letter-spacing: 0.02em;
+}
+
+.profile-strip {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid rgba(29, 29, 29, 0.12);
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.service-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.service-card-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.price-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.65rem;
+  border-radius: 999px;
+  background: #1d1d1d;
+  color: #fff;
+  font-size: 0.72rem;
+  white-space: normal;
+}
+
+.pricing-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(29, 29, 29, 0.08);
+}
+
+.meta-label {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: #73736f;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pricing-meta strong,
+.estimate-box strong {
+  font-size: 1.1rem;
+}
+
+.stage-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.stage-item {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.5rem 0.2rem;
+  border-bottom: 1px solid rgba(29, 29, 29, 0.08);
+  color: #1d1d1d;
+  font-size: 0.94rem;
+}
+
+.stage-item input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+.estimate-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(29, 29, 29, 0.12);
+  background: #f4f3f2;
+}
+
+.service-blocks {
+  display: grid;
+  gap: 1rem;
+}
+
+.service-blocks h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+}
+
+.service-blocks ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: #3a3a3a;
+  line-height: 1.7;
+}
+
+.service-actions {
+  margin-top: auto;
+}
+
+.service-compare-panel {
+  margin-top: 2.5rem;
+}
+
+.service-matrix {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.service-row-compact {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr);
+  gap: 1.25rem;
+  padding: 1rem 0;
+  border-top: 1px solid rgba(29, 29, 29, 0.08);
+}
+
+.service-row-compact ul {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding-left: 1rem;
+  color: #3a3a3a;
+  line-height: 1.6;
+}
+
+.contact-page-layout {
+  max-width: 1200px;
+}
+
+.contact-page-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(400px, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.contact-panel {
+  background: #fff;
+}
+
 @media (max-width: 760px) {
   .content-section {
     padding: 72px 24px;
@@ -468,7 +719,11 @@
   }
 
   .profile-layout,
-  .contact-section {
+  .contact-section,
+  .contact-page-grid,
+  .story-grid,
+  .pricing-grid,
+  .service-row-compact {
     grid-template-columns: 1fr;
     gap: 36px;
   }
@@ -525,6 +780,11 @@
 }
 
 @media (max-width: 520px) {
+  .page-layout {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
   .content-section {
     padding: 64px 20px;
   }
@@ -553,5 +813,9 @@
 
   .form-wide {
     grid-column: auto;
+  }
+
+  .profile-strip {
+    flex-direction: column;
   }
 }

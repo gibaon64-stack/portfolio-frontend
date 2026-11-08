@@ -561,6 +561,33 @@
   font-size: 12px;
 }
 
+.admin-media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 16px;
+}
+
+.admin-media-card {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 12px;
+  border: 1px solid #d5d5d2;
+}
+
+.admin-media-card img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: #f0f0ee;
+}
+
+.admin-media-card code {
+  overflow-wrap: anywhere;
+  color: #73736f;
+  font-size: 10px;
+}
+
 .settings-panel {
   max-width: 680px;
   padding: 24px;

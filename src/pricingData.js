@@ -1,0 +1,125 @@
+export const SERVICE_PRICING = [
+  {
+    id: 'website-development',
+    title: 'Website Development',
+    description: 'Responsive business websites and branded digital experiences designed for clarity, trust, and conversion.',
+    startingPrice: 75000,
+    estimatedRange: 'KES 75,000 - 450,000',
+    pricingModel: 'Project estimate',
+    timeline: '3 - 8 weeks',
+    deliverables: [
+      'Discovery and planning',
+      'Responsive website design',
+      'Frontend and backend implementation',
+      'Deployment and handover',
+    ],
+    stages: [
+      { name: 'Discovery and Planning', cost: 15000 },
+      { name: 'UI/UX Design', cost: 20000 },
+      { name: 'Frontend Development', cost: 20000 },
+      { name: 'Backend Development', cost: 18000 },
+      { name: 'Integrations', cost: 15000 },
+      { name: 'Testing and Quality Assurance', cost: 12000 },
+      { name: 'Deployment and Launch', cost: 10000 },
+      { name: 'Maintenance and Support', cost: 8000 },
+    ],
+    optionalAddOns: [
+      'SEO setup and performance optimisation',
+      'Advanced analytics and conversion tracking',
+      'CMS or admin dashboard configuration',
+      'Priority support retainer',
+    ],
+  },
+  {
+    id: 'application-development',
+    title: 'Application Development',
+    description: 'Custom digital products ranging from lightweight tools to business-critical platforms and internal systems.',
+    startingPrice: 180000,
+    estimatedRange: 'KES 180,000 - 2,200,000',
+    pricingModel: 'Scope-based estimate',
+    timeline: '6 - 20+ weeks',
+    deliverables: [
+      'Requirements and architecture',
+      'User interface and UX design',
+      'Web or mobile application build',
+      'Deployment and support documentation',
+    ],
+    categories: [
+      {
+        name: 'Basic applications',
+        range: 'KES 180,000 - 450,000',
+        description: 'Simple user flows and focused utility applications.',
+      },
+      {
+        name: 'Business applications',
+        range: 'KES 450,000 - 1,200,000',
+        description: 'Moderate feature sets with user roles and data workflows.',
+      },
+      {
+        name: 'Advanced applications',
+        range: 'KES 1,200,000 - 1,800,000',
+        description: 'Complex interaction models and integrations for growth-stage organisations.',
+      },
+      {
+        name: 'Enterprise-level applications',
+        range: 'KES 1,800,000 - 2,200,000+',
+        description: 'High-complexity systems with governance, security, and scale requirements.',
+      },
+    ],
+    stages: [
+      { name: 'Requirements gathering and research', cost: 20000 },
+      { name: 'Product planning and architecture', cost: 25000 },
+      { name: 'UI/UX design', cost: 30000 },
+      { name: 'Frontend development', cost: 45000 },
+      { name: 'Backend development', cost: 50000 },
+      { name: 'Database architecture', cost: 25000 },
+      { name: 'API integrations', cost: 30000 },
+      { name: 'Authentication and authorization', cost: 20000 },
+      { name: 'Testing and debugging', cost: 30000 },
+      { name: 'Deployment and publishing', cost: 20000 },
+      { name: 'Maintenance and ongoing support', cost: 15000 },
+    ],
+    optionalAddOns: [
+      'Custom role and permission setup',
+      'Third-party payment and messaging integrations',
+      'Analytics dashboards and reporting',
+      'Priority maintenance retainer',
+    ],
+  },
+  {
+    id: 'digital-marketing',
+    title: 'Digital Marketing',
+    description: 'Growth planning, content execution, paid media management, and digital visibility support for ambitious brands.',
+    startingPrice: 35000,
+    estimatedRange: 'KES 35,000 - 250,000 / month',
+    pricingModel: 'Monthly management fee + ad spend',
+    timeline: 'Ongoing monthly support',
+    deliverables: [
+      'Strategy and campaign planning',
+      'Content and creative production',
+      'Paid media support',
+      'Performance reporting',
+    ],
+    stages: [
+      { name: 'Social Media Management', cost: 18000 },
+      { name: 'Social Media Advertising', cost: 25000 },
+      { name: 'Content Creation', cost: 22000 },
+      { name: 'Search Engine Optimization', cost: 20000 },
+      { name: 'Marketing Strategy', cost: 15000 },
+    ],
+    optionalAddOns: [
+      'Campaign creative refresh',
+      'Landing-page design for ad campaigns',
+      'Competitor benchmarking reports',
+      'Conversion rate optimisation testing',
+    ],
+  },
+]
+
+export function formatCurrencyKES(amount) {
+  return new Intl.NumberFormat('en-KE', {
+    style: 'currency',
+    currency: 'KES',
+    maximumFractionDigits: 0,
+  }).format(amount)
+}

@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ImagePlus, LogOut, Plus, Save, Trash2, X } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   getAdminContent,
   getAdminOverview,
   getCurrentAdmin,
   loginAdmin,
+  loginUser,
   logoutAdmin,
+  registerUser,
   resolveApiUrl,
   saveAdminResource,
 } from './api'
@@ -39,11 +41,13 @@ const COLLECTIONS = {
     fields: [
       { key: 'title', label: 'Service title', required: true },
       { key: 'description', label: 'Description', type: 'textarea', required: true },
+      { key: 'image_url', label: 'Service image URL' },
       { key: 'capabilities', label: 'Capabilities', type: 'list' },
+      { key: 'pricing', label: 'Pricing JSON (startingPrice, stages, timeline, etc.)', type: 'json' },
       { key: 'position', label: 'Display order', type: 'number' },
       { key: 'active', label: 'Active', type: 'checkbox' },
     ],
-    initial: { title: '', description: '', capabilities: '', position: 0, active: true },
+    initial: { title: '', description: '', image_url: '', capabilities: '', pricing: '{}', position: 0, active: true },
   },
   journey: {
     title: 'Journey',
@@ -71,12 +75,14 @@ const COLLECTIONS = {
 }
 
 const ADMIN_TABS = [
-  ['overview', 'Overview'],
-  ['profile', 'Profile & Hero'],
+  ['overview', 'Admin Home'],
+  ['about', 'About Us'],
+  ['contact', 'Contact Us'],
   ['projects', 'Projects'],
   ['services', 'Services'],
   ['journey', 'Journey'],
   ['social_links', 'Socials'],
+  ['media', 'Media'],
   ['inquiries', 'Inquiries'],
   ['settings', 'Settings'],
 ]
@@ -128,6 +134,90 @@ export function AccountPage() {
   )
 }
 
+export function RegisterPage() {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [registered, setRegistered] = useState(false)
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    setSubmitting(true)
+    setError('')
+    setRegistered(false)
+    try {
+      await registerUser({ name, email, password })
+      setRegistered(true)
+      setPassword('')
+    } catch (registrationError) {
+      setError(registrationError.message)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <PortalFrame eyebrow="CREATE ACCOUNT">
+      <section className="portal-auth">
+        <p className="section-kicker">PUBLIC REGISTRATION</p>
+        <h1>Create your account.</h1>
+        <p>Your account is separate from administrator access.</p>
+        <form className="portal-form" onSubmit={handleSubmit}>
+          <label>Full name<input autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} required maxLength={120} /></label>
+          <label>Email address<input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={254} /></label>
+          <label>Password<input type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} required minLength={12} maxLength={128} /></label>
+          <button className="admin-primary" type="submit" disabled={submitting}>{submitting ? 'CREATING ACCOUNT...' : 'CREATE ACCOUNT'}</button>
+          {error && <p className="admin-feedback" role="alert">{error}</p>}
+          {registered && <p className="admin-feedback" role="status">Account created. You can now sign in.</p>}
+        </form>
+        <p className="admin-feedback"><Link to="/login">Already registered? Sign in</Link></p>
+      </section>
+    </PortalFrame>
+  )
+}
+
+export function UserLoginPage() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [signedInAs, setSignedInAs] = useState('')
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    setSubmitting(true)
+    setError('')
+    setSignedInAs('')
+    try {
+      const user = await loginUser({ email, password })
+      setSignedInAs(user.email)
+    } catch (loginError) {
+      setError(loginError.message)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <PortalFrame eyebrow="ACCOUNT SIGN IN">
+      <section className="portal-auth">
+        <p className="section-kicker">USER SIGN IN</p>
+        <h1>Welcome back.</h1>
+        <form className="portal-form" onSubmit={handleSubmit}>
+          <label>Email address<input type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
+          <label>Password<input type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required /></label>
+          <button className="admin-primary" type="submit" disabled={submitting}>{submitting ? 'SIGNING IN...' : 'SIGN IN'}</button>
+          {error && <p className="admin-feedback" role="alert">{error}</p>}
+          {signedInAs && <p className="admin-feedback" role="status">Signed in as {signedInAs}.</p>}
+        </form>
+        <p className="admin-feedback"><Link to="/register">Create an account</Link></p>
+      </section>
+    </PortalFrame>
+  )
+}
+
 export function AdminPage() {
   const navigate = useNavigate()
   const [admin, setAdmin] = useState(null)
@@ -136,7 +226,7 @@ export function AdminPage() {
   useEffect(() => {
     getCurrentAdmin()
       .then((result) => setAdmin(result.user))
-      .catch(() => navigate('/account', { replace: true }))
+      .catch(() => navigate('/admin/login', { replace: true }))
       .finally(() => setChecking(false))
   }, [navigate])
 
@@ -145,7 +235,7 @@ export function AdminPage() {
   }
   if (!admin) return null
 
-  return <AdminWorkspace admin={admin} onLogout={async () => { try { await logoutAdmin() } finally { navigate('/account', { replace: true }) } }} />
+  return <AdminWorkspace admin={admin} onLogout={async () => { try { await logoutAdmin() } finally { navigate('/admin/login', { replace: true }) } }} />
 }
 
 function AdminWorkspace({ admin, onLogout }) {
@@ -172,8 +262,10 @@ function AdminWorkspace({ admin, onLogout }) {
       await action()
       await refresh()
       setNotice(successMessage)
+      return true
     } catch (actionError) {
       setError(actionError.message)
+      return false
     }
   }
 
@@ -208,7 +300,9 @@ function AdminWorkspace({ admin, onLogout }) {
         {!content ? <p className="admin-feedback">Loading content...</p> : (
           <>
             {activeTab === 'overview' && <OverviewPanel overview={overview} />}
-            {activeTab === 'profile' && <ProfileEditor profile={content.profile} onSave={(data) => runAction(() => saveAdminResource('/admin/profile', 'PUT', data), 'Profile updated.')} />}
+            {activeTab === 'about' && <ProfileEditor profile={content.profile} onSave={(data) => runAction(() => saveAdminResource('/admin/profile', 'PUT', data), 'About Us content updated.')} />}
+            {activeTab === 'contact' && <ContactEditor profile={content.profile} onSave={(data) => runAction(() => saveAdminResource('/admin/profile', 'PUT', data), 'Contact information updated.')} />}
+            {activeTab === 'media' && <MediaPanel assets={content.media_assets || []} onDelete={(id) => runAction(() => saveAdminResource(`/admin/uploads/${id}`, 'DELETE'), 'Image deleted from Cloudinary.')} />}
             {COLLECTIONS[activeTab] && (
               <CollectionEditor
                 key={activeTab}
@@ -218,7 +312,7 @@ function AdminWorkspace({ admin, onLogout }) {
                 onDelete={(path) => runAction(() => saveAdminResource(path, 'DELETE'), `${COLLECTIONS[activeTab].title} item deleted.`)}
               />
             )}
-            {activeTab === 'inquiries' && <InquiriesPanel inquiries={content.inquiries || []} onUpdate={(id, status) => runAction(() => saveAdminResource(`/admin/inquiries/${id}`, 'PATCH', { status }), 'Inquiry updated.')} onDelete={(id) => runAction(() => saveAdminResource(`/admin/inquiries/${id}`, 'DELETE'), 'Inquiry deleted.')} />}
+            {activeTab === 'inquiries' && <InquiriesPanel inquiries={content.inquiries || []} onUpdate={(id, changes) => runAction(() => saveAdminResource(`/admin/inquiries/${id}`, 'PATCH', changes), 'Inquiry updated.')} onDelete={(id) => runAction(() => saveAdminResource(`/admin/inquiries/${id}`, 'DELETE'), 'Inquiry deleted.')} />}
             {activeTab === 'settings' && <SettingsPanel />}
           </>
         )}
@@ -232,7 +326,7 @@ function OverviewPanel({ overview }) {
   const stats = [
     ['Total projects', overview.total_projects],
     ['Published projects', overview.published_projects],
-    ['Active services', overview.total_services],
+    ['Active services', overview.active_services ?? overview.total_services],
     ['Inquiries', overview.total_inquiries],
   ]
   return (
@@ -253,8 +347,9 @@ function OverviewPanel({ overview }) {
 }
 
 function ProfileEditor({ profile, onSave }) {
-  const [form, setForm] = useState(profile || { name: 'Ian Mabruk', introduction: '', hero_description: '', location: 'Kenya', email: '', phone: '', photo_url: '' })
+  const [form, setForm] = useState(profile || { name: 'Ian Mabruk', introduction: '', hero_description: '', hero_image_url: '', about_intro: '', about_who_we_are: '', about_mission: '', about_what_we_do: '', about_approach: '', about_why_choose_us: '', location: 'Kenya', email: '', phone: '', photo_url: '' })
   const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
 
   function update(key, value) {
     setForm((current) => ({ ...current, [key]: value }))
@@ -262,11 +357,31 @@ function ProfileEditor({ profile, onSave }) {
 
   async function uploadPhoto(file) {
     setUploading(true)
+    setUploadError('')
     try {
       const body = new FormData()
       body.append('image', file)
+      body.append('context', 'about')
       const result = await saveAdminResource('/admin/uploads', 'POST', body)
       update('photo_url', resolveApiUrl(result.url))
+    } catch (error) {
+      setUploadError(error.message)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  async function uploadHeroPoster(file) {
+    setUploading(true)
+    setUploadError('')
+    try {
+      const body = new FormData()
+      body.append('image', file)
+      body.append('context', 'homepage')
+      const result = await saveAdminResource('/admin/uploads', 'POST', body)
+      update('hero_image_url', resolveApiUrl(result.url))
+    } catch (error) {
+      setUploadError(error.message)
     } finally {
       setUploading(false)
     }
@@ -281,9 +396,63 @@ function ProfileEditor({ profile, onSave }) {
         <label>Email<input type="email" value={form.email || ''} onChange={(event) => update('email', event.target.value)} maxLength="254" /></label>
         <label>Phone<input value={form.phone || ''} onChange={(event) => update('phone', event.target.value)} maxLength="48" /></label>
         <label className="admin-field-wide">Hero description<textarea value={form.hero_description || ''} onChange={(event) => update('hero_description', event.target.value)} rows="3" maxLength="1000" /></label>
+        <label className="admin-field-wide">Homepage media poster URL<input value={form.hero_image_url || ''} onChange={(event) => update('hero_image_url', event.target.value)} maxLength="500" /></label>
         <label className="admin-field-wide">Profile introduction<textarea value={form.introduction || ''} onChange={(event) => update('introduction', event.target.value)} rows="6" maxLength="5000" /></label>
+        <label className="admin-field-wide">About Us introduction<textarea value={form.about_intro || ''} onChange={(event) => update('about_intro', event.target.value)} rows="4" maxLength="3000" /></label>
+        <label className="admin-field-wide">Who We Are<textarea value={form.about_who_we_are || ''} onChange={(event) => update('about_who_we_are', event.target.value)} rows="3" maxLength="3000" /></label>
+        <label className="admin-field-wide">Mission<textarea value={form.about_mission || ''} onChange={(event) => update('about_mission', event.target.value)} rows="3" maxLength="3000" /></label>
+        <label className="admin-field-wide">What We Do<textarea value={form.about_what_we_do || ''} onChange={(event) => update('about_what_we_do', event.target.value)} rows="3" maxLength="3000" /></label>
+        <label className="admin-field-wide">Our Approach<textarea value={form.about_approach || ''} onChange={(event) => update('about_approach', event.target.value)} rows="3" maxLength="3000" /></label>
+        <label className="admin-field-wide">Why Choose Us<textarea value={form.about_why_choose_us || ''} onChange={(event) => update('about_why_choose_us', event.target.value)} rows="3" maxLength="3000" /></label>
         <label className="admin-field-wide">Profile photo URL<input value={form.photo_url || ''} onChange={(event) => update('photo_url', event.target.value)} maxLength="500" /></label>
         <label className="admin-upload"><ImagePlus aria-hidden="true" /> {uploading ? 'UPLOADING...' : 'UPLOAD PROFILE PHOTO'}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => event.target.files?.[0] && uploadPhoto(event.target.files[0])} /></label>
+        <label className="admin-upload"><ImagePlus aria-hidden="true" /> {uploading ? 'UPLOADING...' : 'UPLOAD HOMEPAGE POSTER'}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => event.target.files?.[0] && uploadHeroPoster(event.target.files[0])} /></label>
+        {uploadError && <p className="admin-notice has-error" role="alert">{uploadError}</p>}
+      </div>
+    </form>
+  )
+}
+
+function ContactEditor({ profile, onSave }) {
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const [form, setForm] = useState({
+    email: profile?.email || '',
+    phone: profile?.phone || '',
+    location: profile?.location || '',
+    contact_image_url: profile?.contact_image_url || '',
+  })
+
+  function update(key, value) {
+    setForm((current) => ({ ...current, [key]: value }))
+  }
+
+  async function uploadContactImage(file) {
+    setUploading(true)
+    setUploadError('')
+    try {
+      const body = new FormData()
+      body.append('image', file)
+      body.append('context', 'contact')
+      const result = await saveAdminResource('/admin/uploads', 'POST', body)
+      update('contact_image_url', resolveApiUrl(result.url))
+    } catch (error) {
+      setUploadError(error.message)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <form className="admin-form" onSubmit={(event) => { event.preventDefault(); onSave(form) }}>
+      <div className="admin-panel-heading"><div><h2>Public contact information</h2><p>These details appear on the Contact Us page.</p></div><button className="admin-primary" type="submit"><Save aria-hidden="true" /> SAVE CONTACT</button></div>
+      <div className="admin-form-grid">
+        <label>Email address<input type="email" value={form.email} onChange={(event) => update('email', event.target.value)} maxLength={254} /></label>
+        <label>Phone number<input value={form.phone} onChange={(event) => update('phone', event.target.value)} maxLength={48} /></label>
+        <label>Location<input value={form.location} onChange={(event) => update('location', event.target.value)} maxLength={160} /></label>
+        <label className="admin-field-wide">Contact image URL<input value={form.contact_image_url} onChange={(event) => update('contact_image_url', event.target.value)} maxLength={500} /></label>
+        <label className="admin-upload"><ImagePlus aria-hidden="true" /> {uploading ? 'UPLOADING...' : 'UPLOAD CONTACT IMAGE'}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => event.target.files?.[0] && uploadContactImage(event.target.files[0])} /></label>
+        {uploadError && <p className="admin-notice has-error" role="alert">{uploadError}</p>}
       </div>
     </form>
   )
@@ -293,13 +462,15 @@ function CollectionEditor({ config, items, onSave, onDelete }) {
   const [selectedId, setSelectedId] = useState(null)
   const [form, setForm] = useState(config.initial)
   const [uploading, setUploading] = useState(false)
+  const [validationError, setValidationError] = useState('')
+  const [uploadError, setUploadError] = useState('')
   const selected = items.find((item) => item.id === selectedId)
 
   function beginEdit(item) {
     setSelectedId(item.id)
     setForm(Object.fromEntries(config.fields.map((field) => {
       const value = item[field.key]
-      return [field.key, field.type === 'list' ? (value || []).join('\n') : value ?? (field.type === 'checkbox' ? false : '')]
+      return [field.key, field.type === 'list' ? (value || []).join('\n') : field.type === 'json' ? JSON.stringify(value || {}, null, 2) : value ?? (field.type === 'checkbox' ? false : '')]
     })))
   }
 
@@ -317,6 +488,7 @@ function CollectionEditor({ config, items, onSave, onDelete }) {
     for (const field of config.fields) {
       if (field.type === 'list') payload[field.key] = String(form[field.key] || '').split('\n').map((item) => item.trim()).filter(Boolean)
       if (field.type === 'number') payload[field.key] = Number(form[field.key] || 0)
+      if (field.type === 'json') payload[field.key] = JSON.parse(String(form[field.key] || '{}'))
     }
     return payload
   }
@@ -324,22 +496,51 @@ function CollectionEditor({ config, items, onSave, onDelete }) {
   async function handleSubmit(event) {
     event.preventDefault()
     const id = selected?.id
-    await onSave(`${config.endpoint}${id ? `/${id}` : ''}`, id ? 'PUT' : 'POST', preparePayload())
-    beginNew()
+    setValidationError('')
+    try {
+      const saved = await onSave(`${config.endpoint}${id ? `/${id}` : ''}`, id ? 'PUT' : 'POST', preparePayload())
+      if (saved) beginNew()
+    } catch (error) {
+      setValidationError(error.message)
+    }
   }
 
   async function uploadScreenshots(files) {
     setUploading(true)
+    setUploadError('')
     try {
       const urls = await Promise.all(Array.from(files).map(async (file) => {
         const body = new FormData()
         body.append('image', file)
+        body.append('context', config === COLLECTIONS.services ? 'services' : 'projects')
         return resolveApiUrl((await saveAdminResource('/admin/uploads', 'POST', body)).url)
       }))
+      if (config === COLLECTIONS.services) {
+        setForm((current) => ({ ...current, image_url: urls[0] }))
+        return
+      }
       setForm((current) => {
         const screenshots = `${current.screenshots || ''}${current.screenshots ? '\n' : ''}${urls.join('\n')}`
         return { ...current, screenshots, cover_image: current.cover_image || urls[0] }
       })
+    } catch (error) {
+      setUploadError(error.message)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  async function uploadCoverImage(file) {
+    setUploading(true)
+    setUploadError('')
+    try {
+      const body = new FormData()
+      body.append('image', file)
+      body.append('context', 'projects')
+      const result = await saveAdminResource('/admin/uploads', 'POST', body)
+      setForm((current) => ({ ...current, cover_image: resolveApiUrl(result.url) }))
+    } catch (error) {
+      setUploadError(error.message)
     } finally {
       setUploading(false)
     }
@@ -350,8 +551,8 @@ function CollectionEditor({ config, items, onSave, onDelete }) {
       return <label className="admin-checkbox" key={field.key}><input type="checkbox" checked={Boolean(form[field.key])} onChange={(event) => update(field.key, event.target.checked)} />{field.label}</label>
     }
     const common = { id: field.key, value: form[field.key] ?? '', required: field.required, onChange: (event) => update(field.key, event.target.value) }
-    if (field.type === 'textarea' || field.type === 'list') {
-      return <label className={field.type === 'textarea' ? 'admin-field-wide' : ''} key={field.key}>{field.label}{field.type === 'textarea' ? <textarea {...common} rows="4" /> : <textarea {...common} rows="3" placeholder="One item per line" />}</label>
+    if (field.type === 'textarea' || field.type === 'list' || field.type === 'json') {
+      return <label className={field.type !== 'list' ? 'admin-field-wide' : ''} key={field.key}>{field.label}{field.type === 'textarea' ? <textarea {...common} rows="4" /> : field.type === 'json' ? <textarea {...common} rows="8" spellCheck="false" /> : <textarea {...common} rows="3" placeholder="One item per line" />}</label>
     }
     if (field.type === 'select') {
       return <label key={field.key}>{field.label}<select {...common}>{field.options.map((option) => <option key={option}>{option}</option>)}</select></label>
@@ -378,7 +579,10 @@ function CollectionEditor({ config, items, onSave, onDelete }) {
         <form className="admin-form" onSubmit={handleSubmit}>
           <div className="admin-panel-heading"><h3>{selected ? 'Edit entry' : 'New entry'}</h3>{selected && <button type="button" className="admin-icon-button" onClick={beginNew} aria-label="Clear selection"><X aria-hidden="true" /></button>}</div>
           <div className="admin-form-grid">{config.fields.map(renderField)}</div>
-          {config === COLLECTIONS.projects && <label className="admin-upload"><ImagePlus aria-hidden="true" /> {uploading ? 'UPLOADING...' : 'UPLOAD PROJECT IMAGES'}<input type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={uploading} onChange={(event) => event.target.files?.length && uploadScreenshots(event.target.files)} /></label>}
+          {validationError && <p className="admin-notice has-error" role="alert">{validationError}</p>}
+          {config === COLLECTIONS.projects && <label className="admin-upload"><ImagePlus aria-hidden="true" /> {uploading ? 'UPLOADING...' : 'REPLACE COVER IMAGE'}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => event.target.files?.[0] && uploadCoverImage(event.target.files[0])} /></label>}
+          {(config === COLLECTIONS.projects || config === COLLECTIONS.services) && <label className="admin-upload"><ImagePlus aria-hidden="true" /> {uploading ? 'UPLOADING...' : config === COLLECTIONS.projects ? 'ADD PROJECT SCREENSHOTS' : 'UPLOAD SERVICE IMAGE'}<input type="file" accept="image/jpeg,image/png,image/webp" multiple={config === COLLECTIONS.projects} disabled={uploading} onChange={(event) => event.target.files?.length && uploadScreenshots(event.target.files)} /></label>}
+          {uploadError && <p className="admin-notice has-error" role="alert">{uploadError}</p>}
           <button className="admin-primary" type="submit"><Save aria-hidden="true" /> {selected ? 'SAVE CHANGES' : 'CREATE ENTRY'}</button>
         </form>
       </div>
@@ -387,17 +591,68 @@ function CollectionEditor({ config, items, onSave, onDelete }) {
 }
 
 function InquiriesPanel({ inquiries, onUpdate, onDelete }) {
+  const [query, setQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [notes, setNotes] = useState({})
+  const filteredInquiries = useMemo(() => {
+    const needle = query.trim().toLowerCase()
+    return inquiries.filter((inquiry) => {
+      const matchesStatus = statusFilter === 'all' || inquiry.status === statusFilter
+      const searchable = [inquiry.name, inquiry.email, inquiry.business_name, inquiry.service, inquiry.message]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+      return matchesStatus && (!needle || searchable.includes(needle))
+    })
+  }, [inquiries, query, statusFilter])
+
   return (
     <div className="admin-panel admin-table-section">
-      <div className="admin-panel-heading"><div><h2>Customer inquiries</h2><p>{inquiries.length} recent inquiries</p></div></div>
-      {inquiries.length ? inquiries.map((inquiry) => (
+      <div className="admin-panel-heading"><div><h2>Customer inquiries</h2><p>{filteredInquiries.length} of {inquiries.length} recent inquiries</p></div></div>
+      <div className="admin-form-grid">
+        <label>Search<input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, email, service, or message" /></label>
+        <label>Status
+          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+            <option value="all">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="contacted">Contacted</option>
+            <option value="completed">Completed</option>
+          </select>
+        </label>
+      </div>
+      {filteredInquiries.length ? filteredInquiries.map((inquiry) => (
         <article className="inquiry-card" key={inquiry.id}>
           <div className="inquiry-card-header"><div><strong>{inquiry.name}</strong><a href={`mailto:${inquiry.email}`}>{inquiry.email}</a></div><span>{new Date(inquiry.created_at).toLocaleString()}</span></div>
           <p>{inquiry.message}</p>
-          <div className="inquiry-card-footer"><span>{inquiry.service}{inquiry.budget ? ` · ${inquiry.budget}` : ''}{inquiry.phone ? ` · ${inquiry.phone}` : ''}</span><select aria-label={`Status for ${inquiry.name}`} value={inquiry.status} onChange={(event) => onUpdate(inquiry.id, event.target.value)}><option value="pending">Pending</option><option value="contacted">Contacted</option><option value="completed">Completed</option></select><button type="button" className="admin-icon-button is-danger" aria-label={`Delete inquiry from ${inquiry.name}`} onClick={() => onDelete(inquiry.id)}><Trash2 aria-hidden="true" /></button></div>
+          <div className="inquiry-card-footer"><span>{[inquiry.business_name, inquiry.service, inquiry.budget, inquiry.timeline, inquiry.phone].filter(Boolean).join(' · ')}</span><select aria-label={`Status for ${inquiry.name}`} value={inquiry.status} onChange={(event) => onUpdate(inquiry.id, { status: event.target.value })}><option value="pending">Pending</option><option value="contacted">Contacted</option><option value="completed">Completed</option></select><button type="button" className="admin-icon-button is-danger" aria-label={`Delete inquiry from ${inquiry.name}`} onClick={() => onDelete(inquiry.id)}><Trash2 aria-hidden="true" /></button></div>
+          <label>Internal notes<textarea rows="2" value={notes[inquiry.id] ?? inquiry.internal_notes ?? ''} onChange={(event) => setNotes((current) => ({ ...current, [inquiry.id]: event.target.value }))} maxLength={5000} /></label>
+          <button type="button" className="admin-secondary" onClick={() => onUpdate(inquiry.id, { internal_notes: notes[inquiry.id] ?? inquiry.internal_notes ?? '' })}>SAVE NOTES</button>
         </article>
-      )) : <p className="admin-empty">No inquiries have been received.</p>}
+      )) : <p className="admin-empty">No inquiries match this search.</p>}
     </div>
+  )
+}
+
+function MediaPanel({ assets, onDelete }) {
+  return (
+    <section className="admin-panel">
+      <div className="admin-panel-heading"><div><h2>Cloudinary image library</h2><p>{assets.length} stored image assets</p></div></div>
+      {assets.length ? (
+        <div className="admin-media-grid">
+          {assets.map((asset) => (
+            <article className="admin-media-card" key={asset.id}>
+              <img src={asset.secure_url} alt="" loading="lazy" />
+              <strong>{asset.folder}</strong>
+              <code>{asset.public_id}</code>
+              <a href={asset.secure_url} target="_blank" rel="noreferrer">OPEN IMAGE</a>
+              <button type="button" className="admin-secondary" onClick={() => {
+                if (window.confirm('Delete this image permanently from Cloudinary? Existing content using it may no longer display.')) onDelete(asset.id)
+              }}>DELETE IMAGE</button>
+            </article>
+          ))}
+        </div>
+      ) : <p className="admin-empty">No Cloudinary images have been uploaded.</p>}
+    </section>
   )
 }
 
@@ -407,7 +662,7 @@ function SettingsPanel() {
       <p className="section-kicker">DESIGN SYSTEM</p>
       <h2>Site settings</h2>
       <p>The public site uses the existing Inter typography, ink and paper colors, and animated CODE aperture. Content updates cannot change those presentation rules.</p>
-      <p>To change administrator access, create another administrator using the backend CLI. Public account registration is disabled.</p>
+      <p>To change administrator access, create another administrator using the backend CLI. Public user accounts are separate and do not receive administrator access.</p>
     </section>
   )
 }
