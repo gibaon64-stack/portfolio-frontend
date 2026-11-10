@@ -2,7 +2,18 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom'
 import { RotateCw, Volume2, VolumeX, Wind } from 'lucide-react'
 import { AccountPage, AdminPage, RegisterPage, UserLoginPage } from './Admin'
-import { AboutPage, ContactPage, ProfilePage, ProjectsPage, ServicesPage, SiteNavigation } from './HomeSections'
+import {
+  AboutPage,
+  ContactPage,
+  JourneyPage,
+  MobileBottomNavigation,
+  ProfileContent,
+  ProfilePage,
+  ProjectsPage,
+  ServicesPage,
+  SiteNavigation,
+  SocialPage,
+} from './HomeSections'
 import MabrookAssistant from './MabrookAssistant'
 import { getPortfolio } from './api'
 import './App.css'
@@ -260,12 +271,12 @@ function Hero({ heroDescription, heroPoster }) {
   const SpeakerIcon = wavesVisible ? Volume2 : VolumeX
 
   return (
-    <main className="scene" id="hero" ref={sceneRef}>
+    <section className="scene" id="hero" ref={sceneRef}>
       <div className="paper" aria-hidden="true">
         <PaperLines />
       </div>
 
-      <SiteNavigation />
+      <SiteNavigation includeMobile={false} />
 
       <div className="hero-visual">
         <div className="mobile-hero-copy">
@@ -330,16 +341,17 @@ function Hero({ heroDescription, heroPoster }) {
         </button>
         <span className="hero-attribute">{heroDescription || 'Technology built to solve everyday problems.'}</span>
       </div>
-    </main>
+    </section>
   )
 }
 
 function HomePage({ portfolio, loadError }) {
   return (
-    <>
+    <div className="page-shell home-page">
       <Hero heroDescription={portfolio?.profile?.hero_description} heroPoster={portfolio?.profile?.hero_image_url} />
-      {loadError && <p className="site-alert" role="status">{loadError}</p>}
-    </>
+      <MobileBottomNavigation />
+      <ProfileContent portfolio={portfolio} loadError={loadError} isHome />
+    </div>
   )
 }
 
@@ -382,6 +394,8 @@ export default function App() {
         <Route path="/projects" element={<ProjectsPage portfolio={portfolio} loadError={loadError} />} />
         <Route path="/services" element={<ServicesPage portfolio={portfolio} loadError={loadError} />} />
         <Route path="/profile" element={<ProfilePage portfolio={portfolio} loadError={loadError} />} />
+        <Route path="/journey" element={<JourneyPage portfolio={portfolio} loadError={loadError} />} />
+        <Route path="/social" element={<SocialPage portfolio={portfolio} loadError={loadError} />} />
         <Route path="/about" element={<AboutPage portfolio={portfolio} loadError={loadError} />} />
         <Route path="/contact" element={<ContactPage portfolio={portfolio} loadError={loadError} />} />
         <Route path="/register" element={<RegisterPage />} />

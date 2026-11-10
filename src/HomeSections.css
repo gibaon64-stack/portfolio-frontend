@@ -820,6 +820,346 @@
   }
 }
 
+.mobile-bottom-navigation {
+  display: none;
+}
+
+.journey-card-list {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.journey-card {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 20px;
+  padding: clamp(20px, 3vw, 32px);
+  border: 1px solid rgba(29, 29, 29, 0.1);
+  border-radius: var(--radius-card);
+  background: #fff;
+}
+
+.journey-card-marker {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid #d5d5d2;
+  border-radius: 50%;
+  color: #555550;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.journey-card-copy h2 {
+  margin: 0 0 8px;
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 550;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+
+.journey-card-copy h3 {
+  margin: 0 0 12px;
+  color: #73736f;
+  font-size: 14px;
+  font-weight: 550;
+}
+
+.journey-card-copy > p:not(.section-kicker) {
+  margin: 0;
+  color: #4a4a46;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.journey-image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.journey-image-grid img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 360px;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #f2f2f1;
+}
+
+.social-profile-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.social-profile-list a {
+  display: flex;
+  min-height: 112px;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid rgba(29, 29, 29, 0.12);
+  border-radius: var(--radius-card);
+  color: #1d1d1d;
+  background: #fff;
+  text-decoration: none;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.social-profile-list a:hover {
+  transform: translateY(-2px);
+  border-color: #1d1d1d;
+}
+
+.social-profile-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #1d1d1d;
+}
+
+.social-profile-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.social-profile-icon svg rect,
+.social-profile-icon svg circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.social-profile-icon svg.tiktok-mark {
+  fill: currentColor;
+  stroke: none;
+}
+
+.social-profile-list a > span:nth-child(2) {
+  display: grid;
+  flex: 1;
+  gap: 4px;
+}
+
+.social-profile-list small {
+  color: #73736f;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.social-profile-list strong {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.social-profile-list a > svg {
+  width: 18px;
+  height: 18px;
+}
+
+.page-shell .profile-hero-card {
+  align-items: start;
+}
+
+.profile-page-image {
+  min-height: 0;
+  aspect-ratio: auto;
+  overflow: hidden;
+}
+
+.profile-page-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+}
+
+.page-shell .project-row {
+  gap: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+.page-shell .project-image-wrap {
+  aspect-ratio: 16 / 10;
+  border-radius: 0;
+}
+
+.page-shell .project-image-wrap img {
+  object-fit: contain;
+  background: #f2f2f1;
+}
+
+.page-shell .project-copy,
+.page-shell .project-links {
+  padding: 0 clamp(16px, 2.5vw, 24px);
+}
+
+.page-shell .project-copy {
+  padding-top: 20px;
+}
+
+.page-shell .project-links {
+  padding-bottom: 20px;
+}
+
+.page-shell .project-link {
+  margin: 0;
+  border-color: #1d1d1d;
+  color: #fff;
+  background: #1d1d1d;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.page-shell .project-link:hover {
+  color: #1d1d1d;
+  background: #fff;
+}
+
+@media (max-width: 720px) {
+  .home-page {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .home-page .home-profile {
+    order: 0;
+  }
+
+  .home-page .scene {
+    order: 1;
+  }
+
+  .page-shell {
+    padding-bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .page-layout,
+  .page-shell .page-layout {
+    padding-top: 2rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .home-profile.page-layout {
+    padding-top: 1.5rem;
+  }
+
+  .page-shell > .navigation,
+  .scene .navigation {
+    display: none !important;
+  }
+
+  .mobile-bottom-navigation {
+    position: fixed;
+    z-index: 30;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    min-height: 68px;
+    padding: 7px max(10px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px));
+    border-top: 1px solid rgba(29, 29, 29, 0.12);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 -8px 26px rgba(29, 29, 29, 0.06);
+    backdrop-filter: blur(14px);
+  }
+
+  .mobile-nav-link {
+    display: flex;
+    min-width: 0;
+    min-height: 48px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-radius: 12px;
+    color: #777772;
+    font-size: 10px;
+    line-height: 1;
+    text-decoration: none;
+    transition: color 0.18s ease, background 0.18s ease;
+  }
+
+  .mobile-nav-link svg {
+    width: 19px;
+    height: 19px;
+    stroke-width: 1.8;
+  }
+
+  .mobile-nav-link.is-active {
+    color: #1d1d1d;
+    background: #f2f2f1;
+    font-weight: 600;
+  }
+
+  .scene {
+    min-height: 100svh;
+  }
+
+  .hero-visual {
+    padding-top: 30px;
+  }
+
+  .hero-footer-bar {
+    display: none;
+  }
+
+  .profile-hero-card {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 16px;
+  }
+
+  .profile-page-image {
+    width: 100%;
+  }
+
+  .social-profile-list {
+    grid-template-columns: 1fr;
+  }
+
+  .journey-card {
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 14px;
+    padding: 18px;
+  }
+
+  .journey-card-marker {
+    width: 34px;
+    height: 34px;
+  }
+
+  .page-shell .project-row {
+    gap: 0;
+  }
+
+  .page-shell .project-copy,
+  .page-shell .project-links {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+}
+
 .page-shell {
   --radius-small: 10px;
   --radius-card: 18px;
@@ -1448,5 +1788,134 @@
   .service-option-card,
   .marketing-package-card {
     padding: 18px;
+  }
+}
+
+.page-shell .profile-hero-card {
+  align-items: start;
+}
+
+.page-shell .profile-page-image {
+  min-height: 0;
+  aspect-ratio: auto;
+}
+
+.page-shell .profile-page-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+}
+
+.profile-page-image > span {
+  min-height: 280px;
+}
+
+.page-shell .project-row {
+  gap: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+.page-shell .project-image-wrap {
+  aspect-ratio: 16 / 10;
+  border-radius: 0;
+}
+
+.page-shell .project-image-wrap img {
+  object-fit: contain;
+  background: #f2f2f1;
+}
+
+.page-shell .project-copy,
+.page-shell .project-links {
+  padding-right: clamp(16px, 2.5vw, 24px);
+  padding-left: clamp(16px, 2.5vw, 24px);
+}
+
+.page-shell .project-copy {
+  padding-top: 20px;
+}
+
+.page-shell .project-links {
+  padding-bottom: 20px;
+}
+
+.page-shell .project-link {
+  margin: 0;
+  border-color: #1d1d1d;
+  color: #fff;
+  background: #1d1d1d;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.page-shell .project-link:hover {
+  color: #1d1d1d;
+  background: #fff;
+}
+
+@media (max-width: 720px) {
+  .page-shell {
+    padding-bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .page-shell .page-layout {
+    padding-top: 2rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .page-shell .home-profile {
+    padding-top: 1.5rem;
+  }
+
+  .page-shell > .navigation,
+  .scene .navigation {
+    display: none !important;
+  }
+
+  .page-shell .profile-hero-card {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 16px;
+  }
+
+  .page-shell .profile-page-image {
+    width: 100%;
+  }
+
+  .profile-page-image > span {
+    min-height: 220px;
+  }
+
+  .page-shell .project-row {
+    gap: 0;
+  }
+
+  .page-shell .project-copy,
+  .page-shell .project-links {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .home-page {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .home-page .home-profile {
+    order: 0;
+  }
+
+  .home-page .scene {
+    order: 1;
+  }
+
+  .hero-visual {
+    padding-top: 30px;
+  }
+
+  .hero-footer-bar {
+    display: none;
   }
 }

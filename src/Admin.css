@@ -93,12 +93,35 @@
 .admin-image-preview {
   display: block;
   width: min(220px, 100%);
-  max-height: 220px;
-  aspect-ratio: 1;
-  object-fit: cover;
+  height: auto;
+  max-height: 320px;
+  object-fit: contain;
   border: 1px solid #dededb;
   border-radius: 14px;
   background: #f2f2f1;
+}
+
+.admin-image-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-image-gallery .admin-image-preview {
+  width: min(180px, 100%);
+  margin: 0;
+}
+
+.admin-image-item {
+  display: grid;
+  width: min(190px, 100%);
+  gap: 8px;
+  margin: 0;
+  align-content: start;
+}
+
+.admin-image-item .admin-image-preview {
+  width: 100%;
 }
 
 .admin-feedback {

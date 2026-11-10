@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { ArrowUpRight, CircleCheck, Menu, UserRound, X } from 'lucide-react'
+import { ArrowUpRight, Briefcase, CircleCheck, Folder, Home, Mail, Share2, UserRound } from 'lucide-react'
 import { Link, NavLink, useSearchParams } from 'react-router-dom'
 import { submitInquiry } from './api'
 import './HomeSections.css'
@@ -13,54 +13,60 @@ function safeUrl(value) {
   }
 }
 
-export function SiteNavigation() {
-  const navLinkClass = ({ isActive }) => `nav-link${isActive ? ' is-active' : ''}`
-  const [menuOpen, setMenuOpen] = useState(false)
+export function MobileBottomNavigation() {
+  const mobileItems = [
+    { to: '/', label: 'Home', Icon: Home, end: true },
+    { to: '/projects', label: 'Projects', Icon: Folder },
+    { to: '/journey', label: 'Journey', Icon: Briefcase },
+    { to: '/social', label: 'Social', Icon: Share2 },
+    { to: '/contact', label: 'Inquiries', Icon: Mail },
+  ]
 
   return (
-    <nav className={`navigation${menuOpen ? ' menu-open' : ''}`} aria-label="Main navigation">
-      <button
-        className="navigation-menu-toggle"
-        type="button"
-        aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-        aria-expanded={menuOpen}
-        onClick={() => setMenuOpen((open) => !open)}
-      >
-        {menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
-      </button>
-      <div className="navigation-links" onClick={() => setMenuOpen(false)}>
-        <NavLink to="/" end className={navLinkClass}>Home</NavLink>
-        <NavLink to="/projects" className={navLinkClass}>Projects</NavLink>
-        <NavLink to="/services" className={navLinkClass}>Services</NavLink>
-        <NavLink to="/about" className={navLinkClass}>About Us</NavLink>
-        <NavLink
-          to="/profile"
-          className={({ isActive }) => `account-link${isActive ? ' is-active' : ''}`}
-          aria-label="Profile"
-          title="Profile"
-        >
-          <UserRound aria-hidden="true" />
+    <nav className="mobile-bottom-navigation" aria-label="Mobile navigation">
+      {mobileItems.map(({ to, label, Icon, end }) => (
+        <NavLink key={label} to={to} end={end} className={({ isActive }) => `mobile-nav-link${isActive ? ' is-active' : ''}`}>
+          <Icon aria-hidden="true" />
+          <span>{label}</span>
         </NavLink>
-      </div>
+      ))}
     </nav>
   )
 }
 
-export function ProfilePage({ portfolio, loadError }) {
+export function SiteNavigation({ includeMobile = true }) {
+  const navLinkClass = ({ isActive }) => `nav-link${isActive ? ' is-active' : ''}`
+
+  return (
+    <>
+      <nav className="navigation" aria-label="Main navigation">
+        <div className="navigation-links">
+          <NavLink to="/" end className={navLinkClass}>Home</NavLink>
+          <NavLink to="/projects" className={navLinkClass}>Projects</NavLink>
+          <NavLink to="/services" className={navLinkClass}>Services</NavLink>
+          <NavLink to="/about" className={navLinkClass}>About Us</NavLink>
+          <NavLink
+            to="/profile"
+            className={({ isActive }) => `account-link${isActive ? ' is-active' : ''}`}
+            aria-label="Profile"
+            title="Profile"
+          >
+            <UserRound aria-hidden="true" />
+          </NavLink>
+        </div>
+      </nav>
+      {includeMobile && <MobileBottomNavigation />}
+    </>
+  )
+}
+
+export function ProfileContent({ portfolio, loadError, isHome = false }) {
   const profile = portfolio?.profile || {}
-  const journey = portfolio?.journey || []
   const socials = (portfolio?.social_links || []).filter((item) => safeUrl(item.url))
 
   return (
-    <div className="page-shell">
-      <SiteNavigation />
-      <main className="page-layout profile-page">
-        <header className="page-header">
-          <p className="section-kicker">PROFILE</p>
-          <h1>A little about the person behind the work.</h1>
-        </header>
-        {loadError && <p className="site-alert" role="status">{loadError}</p>}
-
+    <main className={`page-layout profile-page${isHome ? ' home-profile' : ''}`}>
+      {loadError && <p className="site-alert" role="status">{loadError}</p>}
         <section className="profile-hero-card">
           <div className="profile-page-image">
             {profile.photo_url ? (
@@ -68,7 +74,7 @@ export function ProfilePage({ portfolio, loadError }) {
             ) : <span aria-hidden="true">IM</span>}
           </div>
           <div className="profile-page-intro">
-            <p className="section-kicker">{profile.location || 'KENYA'}</p>
+            <p className="section-kicker">{profile.location || 'KENYA'} · PROFESSIONAL STORY</p>
             <h2>{profile.name || 'Ian Mabruk'}</h2>
             <p className="profile-title">{profile.professional_title || 'Software Engineer · Founder'}</p>
             <p>{profile.introduction || profile.about_intro || 'Professional profile information will be added soon.'}</p>
@@ -87,10 +93,20 @@ export function ProfilePage({ portfolio, loadError }) {
         {profile.skills?.length > 0 && (
           <section className="profile-detail-section">
             <div className="section-heading">
-              <p className="section-kicker">SKILLS & TECHNOLOGIES</p>
-              <h2>Tools for thoughtful solutions.</h2>
+              <p className="section-kicker">SKILLS</p>
+              <h2>Strengths for thoughtful solutions.</h2>
             </div>
             <ul className="profile-skill-list">{profile.skills.map((skill) => <li key={skill}>{skill}</li>)}</ul>
+          </section>
+        )}
+
+        {profile.technologies?.length > 0 && (
+          <section className="profile-detail-section">
+            <div className="section-heading">
+              <p className="section-kicker">TECHNOLOGIES & LANGUAGES</p>
+              <h2>Tools I work with.</h2>
+            </div>
+            <ul className="profile-skill-list">{profile.technologies.map((technology) => <li key={technology}>{technology}</li>)}</ul>
           </section>
         )}
 
@@ -109,23 +125,110 @@ export function ProfilePage({ portfolio, loadError }) {
           ))}
         </div>
 
-        <section className="profile-detail-section">
-          <div className="section-heading">
-            <p className="section-kicker">THE JOURNEY</p>
-            <h2>Learning, building, and growing.</h2>
-          </div>
-          {journey.length ? (
-            <ol className="journey-list">
-              {journey.map((entry, index) => (
-                <li className="journey-entry" key={entry.id || entry.title}>
-                  <span className="journey-index">{String(index + 1).padStart(2, '0')}</span>
-                  <div><p className="section-kicker">{entry.period || 'MILESTONE'}</p><h3>{entry.title}</h3><p>{entry.description}</p></div>
+    </main>
+  )
+}
+
+export function ProfilePage({ portfolio, loadError }) {
+  return (
+    <div className="page-shell">
+      <SiteNavigation />
+      <ProfileContent portfolio={portfolio} loadError={loadError} />
+    </div>
+  )
+}
+
+export function JourneyPage({ portfolio, loadError }) {
+  const journey = portfolio?.journey || []
+
+  return (
+    <div className="page-shell">
+      <SiteNavigation />
+      <main className="page-layout journey-page">
+        <header className="page-header">
+          <p className="section-kicker">PROFESSIONAL JOURNEY</p>
+          <h1>Milestones, experiences, and what came next.</h1>
+        </header>
+        {loadError && <p className="site-alert" role="status">{loadError}</p>}
+        {journey.length ? (
+          <ol className="journey-card-list">
+            {journey.map((entry, index) => (
+              <li key={entry.id || entry.title}>
+                <article className="journey-card">
+                  <div className="journey-card-marker">{String(index + 1).padStart(2, '0')}</div>
+                  <div className="journey-card-copy">
+                    <p className="section-kicker">{entry.period || 'MILESTONE'}</p>
+                    <h2>{entry.title}</h2>
+                    {entry.organization && <h3>{entry.organization}</h3>}
+                    <p>{entry.description}</p>
+                    {entry.image_urls?.filter(safeUrl).length > 0 && (
+                      <div className="journey-image-grid">
+                        {entry.image_urls.filter(safeUrl).map((imageUrl) => (
+                          <img key={imageUrl} src={imageUrl} alt={`${entry.title} supporting photograph`} loading="lazy" />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ol>
+        ) : <p className="empty-note">Journey milestones will appear here when published.</p>}
+      </main>
+    </div>
+  )
+}
+
+function TikTokMark() {
+  return (
+    <svg className="tiktok-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M19.6 8.3a7.3 7.3 0 0 1-4.4-1.5v7.4a5.8 5.8 0 1 1-5-5.7v3.8a2 2 0 1 0 1.2 1.9V2.5h3.8a7.1 7.1 0 0 0 4.4 4.1z" />
+    </svg>
+  )
+}
+
+function InstagramMark() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="0.8" />
+    </svg>
+  )
+}
+
+function SocialPlatformIcon({ platform }) {
+  const normalized = platform.toLowerCase()
+  if (normalized.includes('instagram')) return <InstagramMark />
+  if (normalized.includes('tiktok') || normalized.includes('tik tok')) return <TikTokMark />
+  return <Share2 aria-hidden="true" />
+}
+
+export function SocialPage({ portfolio, loadError }) {
+  const links = (portfolio?.social_links || []).filter((item) => safeUrl(item.url))
+
+  return (
+    <div className="page-shell">
+      <SiteNavigation />
+      <main className="page-layout social-page">
+        <header className="page-header">
+          <p className="section-kicker">SOCIAL</p>
+          <h1>Find me around the web.</h1>
+        </header>
+        {loadError && <p className="site-alert" role="status">{loadError}</p>}
+        {links.length ? (
+          <ul className="social-profile-list">
+            {links.map((item) => (
+              <li key={item.id || item.platform}>
+                <a href={safeUrl(item.url)} target="_blank" rel="noopener noreferrer">
+                  <span className="social-profile-icon"><SocialPlatformIcon platform={item.platform} /></span>
+                  <span><small>FOLLOW ON</small><strong>{item.platform}</strong></span>
                   <ArrowUpRight aria-hidden="true" />
-                </li>
-              ))}
-            </ol>
-          ) : <p className="empty-note">Journey milestones will appear here when published.</p>}
-        </section>
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : <p className="empty-note">Social profiles will appear here when they are configured.</p>}
       </main>
     </div>
   )
@@ -261,7 +364,7 @@ function ProjectCard({ project }) {
       <div className="project-links">
         {liveUrl && (
           <a className="project-link" href={liveUrl} target="_blank" rel="noreferrer">
-            VIEW PROJECT <ArrowUpRight aria-hidden="true" />
+            VIEW WEBSITE <ArrowUpRight aria-hidden="true" />
           </a>
         )}
         {safeUrl(project.github_url) && (
@@ -275,7 +378,11 @@ function ProjectCard({ project }) {
 }
 
 export function ProjectsPage({ portfolio, loadError }) {
-  const projects = [...(portfolio?.projects || [])].sort((first, second) => Number(second.featured) - Number(first.featured))
+  const projects = [...(portfolio?.projects || [])].sort((first, second) => (
+    (first.position ?? 0) - (second.position ?? 0)
+    || Number(second.featured) - Number(first.featured)
+    || first.name.localeCompare(second.name)
+  ))
 
   return (
     <div className="page-shell">
@@ -608,7 +715,7 @@ export function ContactPage({ portfolio, loadError }) {
               <CircleCheck className="success-check" aria-hidden="true" />
               <p className="section-kicker">REQUEST CONFIRMED</p>
               <h2>Request Successfully Submitted!</h2>
-              <p>Thank you for choosing Mabrixel Technologies. We have received your project inquiry and will get back to you shortly.</p>
+              <p>Thank you for choosing Mabrixel Technologies. Your inquiry was saved. The team will review it in the administration dashboard.</p>
               <dl className="inquiry-summary">
                 <div><dt>Selected service</dt><dd>{submittedInquiry?.service}</dd></div>
                 {submittedInquiry?.date && <div><dt>Consultation date</dt><dd>{submittedInquiry.date}</dd></div>}

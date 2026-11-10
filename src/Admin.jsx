@@ -28,6 +28,7 @@ const COLLECTIONS = {
       { key: 'challenges', label: 'Development challenges', type: 'textarea' },
       { key: 'solutions', label: 'Solutions implemented', type: 'textarea' },
       { key: 'technologies', label: 'Technologies', type: 'list' },
+      { key: 'position', label: 'Display order', type: 'number' },
       { key: 'live_url', label: 'Live URL', type: 'url' },
       { key: 'github_url', label: 'GitHub URL', type: 'url' },
       { key: 'cover_image', label: 'Thumbnail image URL', type: 'url' },
@@ -35,7 +36,7 @@ const COLLECTIONS = {
       { key: 'featured', label: 'Featured project', type: 'checkbox' },
       { key: 'published', label: 'Published', type: 'checkbox' },
     ],
-    initial: { name: '', category: 'Website Development', description: '', detailed_description: '', status: '', features: '', challenges: '', solutions: '', technologies: '', live_url: '', github_url: '', cover_image: '', screenshots: '', featured: false, published: false },
+    initial: { name: '', category: 'Website Development', description: '', detailed_description: '', status: '', features: '', challenges: '', solutions: '', technologies: '', position: 0, live_url: '', github_url: '', cover_image: '', screenshots: '', featured: false, published: false },
   },
   services: {
     title: 'Services',
@@ -57,11 +58,13 @@ const COLLECTIONS = {
     fields: [
       { key: 'title', label: 'Milestone title', required: true },
       { key: 'period', label: 'Period or label' },
+      { key: 'organization', label: 'Organization or project' },
       { key: 'description', label: 'Description', type: 'textarea', required: true },
+      { key: 'image_urls', label: 'Photograph URLs', type: 'list' },
       { key: 'position', label: 'Display order', type: 'number' },
       { key: 'published', label: 'Published', type: 'checkbox' },
     ],
-    initial: { title: '', period: '', description: '', position: 0, published: true },
+    initial: { title: '', period: '', organization: '', description: '', image_urls: '', position: 0, published: true },
   },
   social_links: {
     title: 'Social Links',
@@ -311,7 +314,7 @@ function AdminWorkspace({ admin, onLogout }) {
         {!content ? <p className="admin-feedback">Loading content...</p> : (
           <>
             {activeTab === 'overview' && <OverviewPanel overview={overview} />}
-            {activeTab === 'about' && <ProfileEditor profile={content.profile} onSave={(data) => runAction(() => saveAdminResource('/admin/profile', 'PUT', data), 'About Us content updated.')} />}
+            {activeTab === 'about' && <ProfileEditor profile={content.profile} onSave={(data) => runAction(() => saveAdminResource('/admin/profile', 'PUT', data), 'Profile content updated.')} />}
             {activeTab === 'contact' && <ContactEditor profile={content.profile} onSave={(data) => runAction(() => saveAdminResource('/admin/profile', 'PUT', data), 'Contact information updated.')} />}
             {activeTab === 'media' && <MediaPanel assets={content.media_assets || []} onDelete={(id) => runAction(() => saveAdminResource(`/admin/uploads/${id}`, 'DELETE'), 'Image deleted from Cloudinary.')} />}
             {activeTab === 'pricing' && (
@@ -371,7 +374,7 @@ function OverviewPanel({ overview }) {
 }
 
 function ProfileEditor({ profile, onSave }) {
-  const [form, setForm] = useState(profile || { name: 'Ian Mabruk', professional_title: '', introduction: '', skills: [], experience: [], education: [], certifications: [], hero_description: '', hero_image_url: '', about_intro: '', about_who_we_are: '', about_mission: '', about_what_we_do: '', about_approach: '', about_why_choose_us: '', location: 'Kenya', email: '', phone: '', photo_url: '' })
+  const [form, setForm] = useState(profile || { name: 'Ian Mabruk', professional_title: '', introduction: '', skills: [], technologies: [], experience: [], education: [], certifications: [], hero_description: '', hero_image_url: '', about_intro: '', about_who_we_are: '', about_mission: '', about_what_we_do: '', about_approach: '', about_why_choose_us: '', location: 'Kenya', email: '', phone: '', photo_url: '' })
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const [pendingPhoto, setPendingPhoto] = useState(null)
@@ -441,7 +444,8 @@ function ProfileEditor({ profile, onSave }) {
         <label className="admin-field-wide">Hero description<textarea value={form.hero_description || ''} onChange={(event) => update('hero_description', event.target.value)} rows="3" maxLength="1000" /></label>
         <label className="admin-field-wide">Homepage media poster URL<input value={form.hero_image_url || ''} onChange={(event) => update('hero_image_url', event.target.value)} maxLength="500" /></label>
         <label className="admin-field-wide">Profile introduction<textarea value={form.introduction || ''} onChange={(event) => update('introduction', event.target.value)} rows="6" maxLength="5000" /></label>
-        <label>Skills and technologies<textarea value={(form.skills || []).join('\n')} onChange={(event) => updateList('skills', event.target.value)} rows="5" placeholder="One skill per line" /></label>
+        <label>Skills<textarea value={(form.skills || []).join('\n')} onChange={(event) => updateList('skills', event.target.value)} rows="5" placeholder="One skill per line" /></label>
+        <label>Technologies and programming languages<textarea value={(form.technologies || []).join('\n')} onChange={(event) => updateList('technologies', event.target.value)} rows="5" placeholder="One technology or language per line" /></label>
         <label>Professional experience<textarea value={(form.experience || []).join('\n')} onChange={(event) => updateList('experience', event.target.value)} rows="5" placeholder="One experience entry per line" /></label>
         <label>Education<textarea value={(form.education || []).join('\n')} onChange={(event) => updateList('education', event.target.value)} rows="4" placeholder="One education entry per line" /></label>
         <label>Certifications<textarea value={(form.certifications || []).join('\n')} onChange={(event) => updateList('certifications', event.target.value)} rows="4" placeholder="One certification per line" /></label>
@@ -582,7 +586,9 @@ function CollectionEditor({ config, items, onSave, onDelete }) {
 
   function beginNew() {
     setSelectedId(null)
-    setForm({ ...config.initial })
+    const hasPosition = config.fields.some((field) => field.key === 'position')
+    const nextPosition = items.reduce((position, item) => Math.max(position, Number(item.position) || 0), -1) + 1
+    setForm({ ...config.initial, ...(hasPosition ? { position: nextPosition } : {}) })
   }
 
   function update(key, value) {
@@ -618,11 +624,18 @@ function CollectionEditor({ config, items, onSave, onDelete }) {
       const urls = await Promise.all(Array.from(files).map(async (file) => {
         const body = new FormData()
         body.append('image', file)
-        body.append('context', config === COLLECTIONS.services ? 'services' : 'projects')
+        body.append('context', config === COLLECTIONS.services ? 'services' : config === COLLECTIONS.journey ? 'journey' : 'projects')
         return resolveApiUrl((await saveAdminResource('/admin/uploads', 'POST', body)).url)
       }))
       if (config === COLLECTIONS.services) {
         setForm((current) => ({ ...current, image_url: urls[0] }))
+        return
+      }
+      if (config === COLLECTIONS.journey) {
+        setForm((current) => ({
+          ...current,
+          image_urls: `${current.image_urls || ''}${current.image_urls ? '\n' : ''}${urls.join('\n')}`,
+        }))
         return
       }
       setForm((current) => {
@@ -687,7 +700,24 @@ function CollectionEditor({ config, items, onSave, onDelete }) {
           <div className="admin-form-grid">{config.fields.map(renderField)}</div>
           {validationError && <p className="admin-notice has-error" role="alert">{validationError}</p>}
           {config === COLLECTIONS.projects && <label className="admin-upload"><ImagePlus aria-hidden="true" /> {uploading ? 'UPLOADING...' : 'UPLOAD PROJECT THUMBNAIL'}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => event.target.files?.[0] && uploadCoverImage(event.target.files[0])} /></label>}
-          {(config === COLLECTIONS.projects || config === COLLECTIONS.services) && <label className="admin-upload"><ImagePlus aria-hidden="true" /> {uploading ? 'UPLOADING...' : config === COLLECTIONS.projects ? 'ADD PROJECT SCREENSHOTS' : 'UPLOAD SERVICE IMAGE'}<input type="file" accept="image/jpeg,image/png,image/webp" multiple={config === COLLECTIONS.projects} disabled={uploading} onChange={(event) => event.target.files?.length && uploadScreenshots(event.target.files)} /></label>}
+          {config === COLLECTIONS.projects && form.cover_image && <img className="admin-image-preview admin-field-wide" src={form.cover_image} alt="Project thumbnail preview" />}
+          {(config === COLLECTIONS.projects || config === COLLECTIONS.services || config === COLLECTIONS.journey) && <label className="admin-upload"><ImagePlus aria-hidden="true" /> {uploading ? 'UPLOADING...' : config === COLLECTIONS.projects ? 'ADD PROJECT SCREENSHOTS' : config === COLLECTIONS.journey ? 'ADD MILESTONE PHOTOGRAPHS' : 'UPLOAD SERVICE IMAGE'}<input type="file" accept="image/jpeg,image/png,image/webp" multiple={config === COLLECTIONS.projects || config === COLLECTIONS.journey} disabled={uploading} onChange={(event) => event.target.files?.length && uploadScreenshots(event.target.files)} /></label>}
+          {config === COLLECTIONS.journey && (
+            <div className="admin-image-gallery admin-field-wide">
+              {(String(form.image_urls || '').split('\n').map((url) => url.trim()).filter(Boolean)).map((url) => (
+                <figure className="admin-image-item" key={url}>
+                  <img className="admin-image-preview" src={url} alt="Milestone photograph preview" />
+                  <button
+                    className="admin-secondary"
+                    type="button"
+                    onClick={() => update('image_urls', String(form.image_urls || '').split('\n').filter((imageUrl) => imageUrl.trim() !== url).join('\n'))}
+                  >
+                    REMOVE PHOTO
+                  </button>
+                </figure>
+              ))}
+            </div>
+          )}
           {uploadError && <p className="admin-notice has-error" role="alert">{uploadError}</p>}
           <button className="admin-primary" type="submit"><Save aria-hidden="true" /> {selected ? 'SAVE CHANGES' : 'CREATE ENTRY'}</button>
         </form>
